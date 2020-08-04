@@ -1,0 +1,8 @@
+{
+  "domain": "velux",
+  "name": "Velux",
+  "documentation": "https://www.home-assistant.io/integrations/velux",
+  "codeowners": ["@Julius2342"],
+  "zeroconf": ["_http._tcp.local."],
+  "config_flow": true
+}
