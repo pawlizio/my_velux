@@ -8,7 +8,7 @@ Copy this into your custom_components\my_velux folder and update your configurat
       host: "192.168.xxx.xxx"
       password: !secret velux_password
 
-For troubleshooting enable logger without your configuration.yaml: 
+For troubleshooting enable logger without your configuration.yaml as follows: 
 
     logger:
       default: warning
