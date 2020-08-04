@@ -7,3 +7,10 @@ Copy this into your custom_components\my_velux folder and update your configurat
     my_velux:
       host: "192.168.xxx.xxx"
       password: !secret velux_password
+
+For troubleshooting enable logger without your configuration.yaml: 
+
+    logger:
+      default: warning
+      logs:
+        pyvlx: debug
