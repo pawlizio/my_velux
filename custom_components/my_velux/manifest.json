@@ -1,5 +1,5 @@
 {
-  "domain": "velux",
+  "domain": "my_velux",
   "name": "Velux",
   "documentation": "https://www.home-assistant.io/integrations/velux",
   "codeowners": ["@pawlizio"],
