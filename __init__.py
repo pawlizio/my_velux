@@ -54,7 +54,7 @@ class VeluxModule:
         async def on_hass_stop(event):
             """Close connection when hass stops."""
             _LOGGER.debug("Velux interface terminated, Gateway will be rebooted")
-            await self.pyvlx.reboot_gateway()
+            # await self.pyvlx.reboot_gateway()
             self.pyvlx.disconnect()
 
         async def reboot_gateway(call):
