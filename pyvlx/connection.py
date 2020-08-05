@@ -67,10 +67,9 @@ class Connection:
         self.loop = loop
         self.config = config
         self.transport = None
-        self.protocol = None
         self.frame_received_cbs = []
         self.connected = False
-        self.connectionCounter = 0
+        self.connection_counter = 0
         self.connection_lost = connection_lost_cb
 
     def __del__(self):
@@ -81,7 +80,7 @@ class Connection:
         """Disconnect connection."""
         if self.transport is not None:
             self.transport.close()
-            PYVLXLOG.debug("KLF transport closed")
+            PYVLXLOG.debug("KLF200 transport closed")
             self.transport = None
         self.connected = False
         PYVLXLOG.debug("KLF200 disconnected")
@@ -89,14 +88,15 @@ class Connection:
     async def connect(self):
         """Connect to gateway via SSL."""
         tcp_client = TCPTransport(self.frame_received_cb, self.connection_lost_cb)
-        self.transport, self.protocol = await self.loop.create_connection(
+        self.transport, _ = await self.loop.create_connection(
             lambda: tcp_client,
             host=self.config.host,
             port=self.config.port,
-            ssl=self.create_ssl_context())
+            ssl=self.create_ssl_context(),
+        )
         self.connected = True
-        self.connectionCounter += 1
-        PYVLXLOG.debug("KLF200 connected. Amount of reconnections since pyvlx start: %d ", self.connectionCounter)
+        self.connection_counter += 1
+        PYVLXLOG.debug("KLF200 connected. Amount of reconnections since pyvlx start: %d ", self.connection_counter)
 
     def register_frame_received_cb(self, callback):
         """Register frame received callback."""

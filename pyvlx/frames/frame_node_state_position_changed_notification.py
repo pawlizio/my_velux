@@ -1,7 +1,7 @@
 """Module for get node information from gateway."""
 import struct
 from datetime import datetime
-from ..log import PYVLXLOG
+
 from ..const import Command
 from ..parameter import Parameter
 
@@ -55,18 +55,20 @@ class FrameNodeStatePositionChangedNotification(FrameBase):
         # @VELUX: looks like your timestamp is wrong. Looks like
         # you are only transmitting the two lower bytes.
         self.timestamp = struct.unpack(">I", payload[16:20])[0]
-        try:
-            self.timestamp = datetime.fromtimestamp(self.timestamp)
-        except:
-            PYVLXLOG.debug("Timestamp could not be converted %i", self.timestamp)
+
+    @property
+    def timestamp_formatted(self):
+        """Return time as human readable string."""
+        return datetime.fromtimestamp(self.timestamp).strftime("%Y-%m-%d %H:%M:%S")
 
     def __str__(self):
         """Return human readable string."""
-        return '<FrameNodeStatePositionChangedNotification node_id={} ' \
-            'state={} current_position=\'{}\' ' \
-            'target=\'{}\' current_position_fp1=\'{}\' current_position_fp2=\'{}\' ' \
-            'current_position_fp3=\'{}\' current_position_fp4=\'{}\' ' \
-            'remaining_time={} time=\'{}\'/>'.format(
+        return (
+            "<FrameNodeStatePositionChangedNotification node_id={} "
+            "state={} current_position='{}' "
+            "target='{}' current_position_fp1='{}' current_position_fp2='{}' "
+            "current_position_fp3='{}' current_position_fp4='{}' "
+            "remaining_time={} time='{}'/>".format(
                 self.node_id,
                 self.state,
                 self.current_position,
@@ -76,5 +78,6 @@ class FrameNodeStatePositionChangedNotification(FrameBase):
                 self.current_position_fp3,
                 self.current_position_fp4,
                 self.remaining_time,
-                self.timestamp
-                )
+                self.timestamp_formatted,
+            )
+        )

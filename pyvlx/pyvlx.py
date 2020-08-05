@@ -42,15 +42,14 @@ class PyVLX:
     async def connect(self):
         """Connect to KLF 200."""
         PYVLXLOG.debug("Connecting to KLF 200.")
-        try: 
-            await self.connection.connect()
-        except: 
-            raise PyVLXException("Unable to connect to KLF200")
-            return
+        await self.connection.connect()
         login = Login(pyvlx=self, password=self.config.password)
         await login.do_api_call()
         if not login.success:
             raise PyVLXException("Login to KLF 200 failed, check credentials")
+        """
+        #  Enable this to reboot the KLF after first connection and every 2nd.
+        """
         # if self.connection.connectionCounter % 2:
         #     await self.reboot_gateway()
         #     await asyncio.sleep(30)
@@ -62,7 +61,8 @@ class PyVLX:
         self.heartbeat.start()
 
     async def reboot_gateway(self):
-        PYVLXLOG.debug("KLF 200 reboot initiated")
+        """Reboot gateway."""
+        PYVLXLOG.warning("KLF 200 reboot initiated")
         reboot = Reboot(pyvlx=self)
         await reboot.do_api_call()
 

@@ -14,8 +14,7 @@ _LOGGER = logging.getLogger(__name__)
 CONFIG_SCHEMA = vol.Schema(
     {
         DOMAIN: vol.Schema(
-            {vol.Required(CONF_HOST): cv.string,
-             vol.Required(CONF_PASSWORD): cv.string}
+            {vol.Required(CONF_HOST): cv.string, vol.Required(CONF_PASSWORD): cv.string}
         )
     },
     extra=vol.ALLOW_EXTRA,
@@ -55,21 +54,17 @@ class VeluxModule:
         async def on_hass_stop(event):
             """Close connection when hass stops."""
             _LOGGER.debug("Velux interface terminated, Gateway will be rebooted")
-            # await self.pyvlx.reboot_gateway()
+            await self.pyvlx.reboot_gateway()
             self.pyvlx.disconnect()
 
         async def reboot_gateway(call):
             await self.pyvlx.reboot_gateway()
 
-        self._hass.bus.async_listen_once(
-            EVENT_HOMEASSISTANT_STOP, on_hass_stop)
+        self._hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, on_hass_stop)
         host = self._domain_config.get(CONF_HOST)
         password = self._domain_config.get(CONF_PASSWORD)
         self.pyvlx = PyVLX(host=host, password=password)
         self._hass.services.async_register(DOMAIN, "reboot_gateway", reboot_gateway)
-
-    async def reboot(self):
-        self.pyvlx.reboot_gateway()
 
     async def async_start(self):
         """Start velux component."""

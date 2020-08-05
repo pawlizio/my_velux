@@ -2,11 +2,11 @@
 from .frames import (
     FrameActivateSceneConfirmation, FrameActivateSceneRequest,
     FrameActivationLogUpdatedNotification,
-    FrameGatewayRebootRequest, FrameGatewayRebootConfirmation, 
     FrameCommandRemainingTimeNotification, FrameCommandRunStatusNotification,
     FrameCommandSendConfirmation, FrameCommandSendRequest,
     FrameDiscoverNodesConfirmation, FrameDiscoverNodesNotification,
     FrameDiscoverNodesRequest, FrameErrorNotification,
+    FrameGatewayRebootConfirmation, FrameGatewayRebootRequest,
     FrameGetAllNodesInformationConfirmation,
     FrameGetAllNodesInformationFinishedNotification,
     FrameGetAllNodesInformationNotification,
@@ -35,7 +35,11 @@ def frame_from_raw(raw):
     command, payload = extract_from_frame(raw)
     frame = create_frame(command)
     if frame is None:
-        PYVLXLOG.warning("Command %s not implemented, raw: %s", command, ":".join("{:02x}".format(c) for c in raw))
+        PYVLXLOG.warning(
+            "Command %s not implemented, raw: %s",
+            command,
+            ":".join("{:02x}".format(c) for c in raw),
+        )
         return None
     frame.validate_payload_len(payload)
     frame.from_payload(payload)
@@ -47,10 +51,6 @@ def create_frame(command):
     # pylint: disable=too-many-branches,too-many-return-statements
     if command == Command.GW_ERROR_NTF:
         return FrameErrorNotification()
-    if command == Command.GW_REBOOT_REQ:
-        return FrameGatewayRebootRequest()
-    if command == Command.GW_REBOOT_CFM:
-        return FrameGatewayRebootConfirmation()
     if command == Command.GW_COMMAND_SEND_REQ:
         return FrameCommandSendRequest()
     if command == Command.GW_COMMAND_SEND_CFM:
@@ -66,6 +66,11 @@ def create_frame(command):
         return FramePasswordEnterRequest()
     if command == Command.GW_PASSWORD_ENTER_CFM:
         return FramePasswordEnterConfirmation()
+
+    if command == Command.GW_REBOOT_REQ:
+        return FrameGatewayRebootRequest()
+    if command == Command.GW_REBOOT_CFM:
+        return FrameGatewayRebootConfirmation()
 
     if command == Command.GW_CS_DISCOVER_NODES_REQ:
         return FrameDiscoverNodesRequest()

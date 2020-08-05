@@ -1,10 +1,16 @@
 """Support for Velux covers."""
 from .pyvlx import OpeningDevice, Position
-from .pyvlx.opening_device import Awning, Blind, GarageDoor, RollerShutter, Window
+from .pyvlx.opening_device import Awning, Blind, GarageDoor, Gate, RollerShutter, Window
 
 from homeassistant.components.cover import (
     ATTR_POSITION,
     ATTR_TILT_POSITION,
+    DEVICE_CLASS_AWNING,
+    DEVICE_CLASS_BLIND,
+    DEVICE_CLASS_GARAGE,
+    DEVICE_CLASS_GATE,
+    DEVICE_CLASS_SHUTTER,
+    DEVICE_CLASS_WINDOW,
     SUPPORT_CLOSE,
     SUPPORT_OPEN,
     SUPPORT_SET_POSITION,
@@ -13,7 +19,7 @@ from homeassistant.components.cover import (
     SUPPORT_CLOSE_TILT,
     SUPPORT_STOP_TILT,
     SUPPORT_SET_TILT_POSITION,
-    CoverDevice,
+    CoverEntity,
 )
 from homeassistant.core import callback
 
@@ -29,7 +35,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     async_add_entities(entities)
 
 
-class VeluxCover(CoverDevice):
+class VeluxCover(CoverEntity):
     """Representation of a Velux cover."""
 
     def __init__(self, node):
@@ -69,14 +75,12 @@ class VeluxCover(CoverDevice):
     def supported_features(self):
         """Flag supported features."""
         supported_features = SUPPORT_OPEN | SUPPORT_CLOSE | SUPPORT_SET_POSITION | SUPPORT_STOP
-
         if self.current_cover_tilt_position is not None:
             supported_features |= (
                 SUPPORT_OPEN_TILT
                 | SUPPORT_CLOSE_TILT
                 | SUPPORT_SET_TILT_POSITION
             )
-
         return supported_features
 
     @property
@@ -92,18 +96,20 @@ class VeluxCover(CoverDevice):
 
     @property
     def device_class(self):
-        """Define this cover as either window/blind/awning/shutter."""
-        if isinstance(self.node, Window):
-            return "window"
-        if isinstance(self.node, Blind):
-            return "blind"
-        if isinstance(self.node, RollerShutter):
-            return "shutter"
+        """Define this cover as either awning, blind, garage, gate, shutter or window."""
         if isinstance(self.node, Awning):
-            return "awning"
+            return DEVICE_CLASS_AWNING
+        if isinstance(self.node, Blind):
+            return DEVICE_CLASS_BLIND
         if isinstance(self.node, GarageDoor):
-            return "garage"
-        return "window"
+            return DEVICE_CLASS_GARAGE
+        if isinstance(self.node, Gate):
+            return DEVICE_CLASS_GATE
+        if isinstance(self.node, RollerShutter):
+            return DEVICE_CLASS_SHUTTER
+        if isinstance(self.node, Window):
+            return DEVICE_CLASS_WINDOW
+        return DEVICE_CLASS_WINDOW
 
     @property
     def is_closed(self):
@@ -149,3 +155,9 @@ class VeluxCover(CoverDevice):
             orientation = Position(position_percent=position_percent)
             await self.node.set_orientation(orientation=orientation, wait_for_completion=False
                                             )
+
+
+
+
+
+

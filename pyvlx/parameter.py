@@ -2,7 +2,7 @@
 from .exception import PyVLXException
 
 
-class Parameter():
+class Parameter:
     """General object for storing parameters."""
 
     UNKNOWN_VALUE = 63487  # F7 FF
@@ -11,7 +11,7 @@ class Parameter():
     MIN = 0  # 00 00
     ON = 0  # 00 00
     OFF = 51200  # C8 00
-    TARGET = 53504 # D1 00
+    TARGET = 53504  # D1 00
     IGNORE = 54272  # D4 00
 
     def __init__(self, raw=None):
@@ -57,11 +57,13 @@ class Parameter():
             raise PyVLXException("Position::raw_must_be_bytes")
         if len(raw) != 2:
             raise PyVLXException("Position::raw_must_be_two_bytes")
-        if raw != Position.from_int(Position.CURRENT) and \
-                raw != Position.from_int(Position.IGNORE) and \
-                raw != Position.from_int(Position.TARGET) and \
-                raw != Position.from_int(Position.UNKNOWN_VALUE) and \
-                Position.to_int(raw) > Position.MAX:
+        if (
+            raw != Position.from_int(Position.CURRENT)
+            and raw != Position.from_int(Position.IGNORE)
+            and raw != Position.from_int(Position.TARGET)
+            and raw != Position.from_int(Position.UNKNOWN_VALUE)
+            and Position.to_int(raw) > Position.MAX
+        ):
             raise PyVLXException("parameter::raw_exceed_limit", raw=raw)
         return raw
 
@@ -71,7 +73,7 @@ class Parameter():
 
     def __str__(self):
         """Return string representation of object."""
-        return '0x' + ''.join('{:02X}'.format(x) for x in self.raw)
+        return "0x" + "".join("{:02X}".format(x) for x in self.raw)
 
 
 class SwitchParameter(Parameter):
@@ -185,13 +187,13 @@ class Position(Parameter):
             raise PyVLXException("Position::position_percent_has_to_be_positive")
         if position_percent > 100:
             raise PyVLXException("Position::position_percent_out_of_range")
-        return bytes([position_percent*2, 0])
+        return bytes([position_percent * 2, 0])
 
     @staticmethod
     def to_percent(raw):
         """Create percent position value out of raw."""
         # The first byte has the vlue from 0 to 200. Ignoring the second one.
-        return int(raw[0]/2)
+        return int(raw[0] / 2)
 
     def __str__(self):
         """Return string representation of object."""
@@ -215,19 +217,28 @@ class CurrentPosition(Position):
         """Initialize CurrentPosition class."""
         super().__init__(position=Position.CURRENT)
 
+
 class TargetPosition(Position):
-    """To set a functional parameter"""
+    """Class for using a target position, if another parameter is set.
+
+    It is implemented by taking the target parameter value and loads it into the execution
+    parameter buffer. When the target value is read, it holds for a given parameter always the
+    latest stored target value about a command execution.
+
+    """
 
     def __init__(self):
         """Initialize CurrentPosition class."""
         super().__init__(position=Position.TARGET)
 
+
 class IgnorePosition(Position):
-    """To set a functional parameter"""
+    """The Ignore is used where a parameter in the frame is to be ignored."""
 
     def __init__(self):
         """Initialize CurrentPosition class."""
         super().__init__(position=Position.IGNORE)
+
 
 class Intensity(Parameter):
     """Class for storing an intensity."""
@@ -296,13 +307,13 @@ class Intensity(Parameter):
             raise PyVLXException("Intensity::intensity_percent_has_to_be_positive")
         if intensity_percent > 100:
             raise PyVLXException("Intensity::intensity_percent")
-        return bytes([intensity_percent*2, 0])
+        return bytes([intensity_percent * 2, 0])
 
     @staticmethod
     def to_percent(raw):
         """Create percent intensity value out of raw."""
         # The first byte has the value from 0 to 200. Ignoring the second one.
-        return int(raw[0]/2)
+        return int(raw[0] / 2)
 
     def __str__(self):
         """Return string representation of object."""

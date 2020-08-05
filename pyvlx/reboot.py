@@ -1,7 +1,8 @@
 """Module for handling the login to API."""
 from .api_event import ApiEvent
-from .frames import FrameGatewayRebootRequest, FrameGatewayRebootConfirmation
+from .frames import FrameGatewayRebootConfirmation, FrameGatewayRebootRequest
 from .log import PYVLXLOG
+
 
 class Reboot(ApiEvent):
     """Class for handling login to API."""
@@ -15,7 +16,7 @@ class Reboot(ApiEvent):
         """Handle incoming API frame, return True if this was the expected frame."""
         if isinstance(frame, FrameGatewayRebootConfirmation):
             PYVLXLOG.warning("KLF200 is rebooting")
-            self.pyvlx.connection.disconnect()
+            self.pyvlx.connection.connected = False
             return True
         return False
 

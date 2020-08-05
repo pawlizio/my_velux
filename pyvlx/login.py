@@ -20,7 +20,9 @@ class Login(ApiEvent):
         if not isinstance(frame, FramePasswordEnterConfirmation):
             return False
         if frame.status == PasswordEnterConfirmationStatus.FAILED:
-            PYVLXLOG.warning('Failed to authenticate with password "%s****"', self.password[:2])
+            PYVLXLOG.warning(
+                'Failed to authenticate with password "%s****"', self.password[:2]
+            )
             self.success = False
         if frame.status == PasswordEnterConfirmationStatus.SUCCESSFUL:
             self.success = True
