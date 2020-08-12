@@ -9,6 +9,7 @@ from .const import (
     CONF_PASSWORD
 )
 
+_LOGGER = logging.getLogger(__name__)
 
 DATA_SCHEMA = vol.Schema(
     {
