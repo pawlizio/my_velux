@@ -1,4 +1,4 @@
-# velux
+# Velux
 Custom component of velux (KLF200) integration for Home Assistant
 
 Copy this repository into HACS as custom_component for Integration category.
