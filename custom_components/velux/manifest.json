@@ -1,0 +1,9 @@
+{
+  "domain": "velux",
+  "name": "Velux",
+  "documentation": "https://www.home-assistant.io/integrations/velux",
+  "codeowners": ["@pawlizio"],
+  "requirements": ["pyvlx==0.2.17"],
+  "zeroconf": ["_http._tcp.local."],
+  "config_flow": true
+}
