@@ -14,7 +14,8 @@
                     "host": "Host",
                     "password": "Password"
                 },
-                "title": "Configure the KLF200 Gateway"
+                "title": "Configure the KLF200 Gateway",
+                "description": "You will find the password on the backside of the gateway"
             }
         }
     },
