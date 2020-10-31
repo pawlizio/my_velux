@@ -4,7 +4,6 @@
     "step": {
       "user": {
         "title": "Pick the KLF200 Gateway",
-        "description": "You will find the password on the backside of the gateway",
         "data": {
           "host": "Host",
           "password": "Password"
