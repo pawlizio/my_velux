@@ -1,18 +1,13 @@
 """Support for VELUX KLF 200 devices."""
 import logging
 
-import homeassistant.helpers.config_validation as cv
+from pyvlx import PyVLX
+
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import (
-    CONF_HOST,
-    CONF_PASSWORD
-)
+from homeassistant.const import CONF_HOST, CONF_PASSWORD
 from homeassistant.core import HomeAssistant
 
-import voluptuous as vol
-
 from .const import DOMAIN, PLATFORMS
-from pyvlx import PyVLX
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -38,11 +33,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = gateway
 
-    try:
-        await gateway.load_nodes()
-        await gateway.load_scenes()
-    except ConnectionRefusedError:
-        return False
+    await gateway.connect()
+    await gateway.load_nodes()
+    await gateway.load_scenes()
 
     for component in PLATFORMS:
         hass.async_create_task(
@@ -52,8 +45,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     async def async_reboot_gateway(service_call):
         await gateway.reboot_gateway()
 
-    hass.services.async_register(
-        DOMAIN, "reboot_gateway", async_reboot_gateway)
+    hass.services.async_register(DOMAIN, "reboot_gateway", async_reboot_gateway)
 
     return True
 
@@ -61,6 +53,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 async def async_unload_entry(hass, entry):
     """Unloading the Velux platform."""
     gateway = hass.data[DOMAIN][entry.entry_id]
+    await gateway.reboot_gateway()
     await gateway.disconnect()
 
     for component in PLATFORMS:
