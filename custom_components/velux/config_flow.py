@@ -60,10 +60,11 @@ class VeluxConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             self._host = user_input[CONF_HOST]
             self._password = user_input[CONF_PASSWORD]
 
+            await self.async_set_unique_id(self._host)
+            self._abort_if_unique_id_configured()
+
             result = await self._try_connect()
             if result == RESULT_SUCCESS:
-                await self.async_set_unique_id(self._host)
-                self._abort_if_unique_id_configured()
                 return self._get_entry()
             else:
                 errors['base'] = RESULT_AUTH_FAILED
