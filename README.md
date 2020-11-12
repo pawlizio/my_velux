@@ -18,3 +18,17 @@ For troubleshooting enable logger for pyvlx at your configuration.yaml as follow
       logs:
         pyvlx: debug
         custom_components.velux: debug
+
+In order to avoid connection problems after updates or reboots of Home Assistant create an automation as follows:
+
+    alias: KLF reboot on hass stop event
+    description: ''
+    trigger:
+      - event_data: {}
+        event_type: homeassistant_stop
+        platform: event
+    condition: []
+    action:
+      - data: {}
+        service: velux.reboot_gateway
+    mode: single
