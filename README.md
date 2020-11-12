@@ -17,3 +17,4 @@ For troubleshooting enable logger for pyvlx at your configuration.yaml as follow
       default: warning
       logs:
         pyvlx: debug
+        custom_components.velux: debug
