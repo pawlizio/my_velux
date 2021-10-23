@@ -121,6 +121,15 @@ class VeluxCover(CoverEntity):
         return DEVICE_CLASS_WINDOW
 
     @property
+    def device_info(self):
+        return {
+            "identifiers": {
+                (DOMAIN, self.unique_id)
+            },
+            "name": self.name,
+        }
+
+    @property
     def is_closed(self):
         """Return if the cover is closed."""
         return self.node.position.closed
