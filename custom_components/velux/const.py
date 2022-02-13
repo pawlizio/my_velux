@@ -1,4 +1,4 @@
 """Constants for Valux Integration."""
 
 DOMAIN = "velux"
-PLATFORMS = ["cover", "number", "scene"]
+PLATFORMS = ["cover", "number", "scene", "sensor"]
