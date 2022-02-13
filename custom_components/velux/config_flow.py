@@ -79,12 +79,12 @@ class VeluxConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle discovery by zeroconf."""
         if (
             info is None
-            or not info.get("hostname")
-            or not info["hostname"].startswith("VELUX_KLF_LAN")
+            or not info.hostname
+            or not info.hostname.startswith("VELUX_KLF_LAN")
         ):
             return self.async_abort(reason="no_devices_found")
 
-        self._host = info.get("host")
+        self._host = info.host
 
         await self.async_set_unique_id(self._host)
         self._abort_if_unique_id_configured()
