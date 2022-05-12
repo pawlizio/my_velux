@@ -22,13 +22,12 @@ For troubleshooting enable logger for pyvlx at your configuration.yaml as follow
 In order to avoid connection problems after updates or reboots of Home Assistant create an automation as follows:
 
     alias: KLF reboot on hass stop event
-    description: ''
+    description: Reboots the KLF200 in order to avoid SSL Handshake issue
     trigger:
-      - event_data: {}
-        event_type: homeassistant_stop
-        platform: event
+      - platform: homeassistant
+        event: shutdown
     condition: []
     action:
-      - data: {}
-        service: velux.reboot_gateway
+      - service: velux.reboot_gateway
+        data: {}
     mode: single
