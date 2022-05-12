@@ -2,7 +2,7 @@
 
 from pyvlx.opening_device import Blind
 
-from homeassistant.const import ENTITY_CATEGORY_CONFIG
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.components.number import NumberEntity
 from homeassistant.components.number.const import DOMAIN, MODE_SLIDER
 
@@ -62,7 +62,7 @@ class VeluxOpenOrientatoion(NumberEntity):
     @property
     def entity_category(self):
         """Return the entity_categor of this number."""
-        return ENTITY_CATEGORY_CONFIG
+        return EntityCategory.CONFIG
 
     @property
     def mode(self):
@@ -110,7 +110,7 @@ class VeluxCloseOrientatoion(NumberEntity):
     @property
     def entity_category(self):
         """Return the entity_categor of this number."""
-        return ENTITY_CATEGORY_CONFIG
+        return EntityCategory.CONFIG
 
     @property
     def mode(self):
