@@ -6,6 +6,8 @@ from homeassistant.components.scene import Scene
 from . import _LOGGER
 from .const import DOMAIN
 
+PARALLEL_UPDATES = 1
+
 
 async def async_setup_entry(hass, entry, async_add_entities):
     """Set up the scenes for Velux platform."""

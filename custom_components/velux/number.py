@@ -9,6 +9,8 @@ from homeassistant.components.number.const import DOMAIN, MODE_SLIDER
 
 from .const import DOMAIN
 
+PARALLEL_UPDATES = 1
+
 
 async def async_setup_entry(hass, entry, async_add_entities):
     """Set up cover(s) for Velux platform."""
