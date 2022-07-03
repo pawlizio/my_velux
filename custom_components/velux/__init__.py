@@ -16,6 +16,7 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup(hass, config):
     """Set up the Velux KLF platform via configuration.yaml."""
     if DOMAIN in config:
+        _LOGGER.debug("Setting up velux entry via configuration.yaml")
         hass.async_create_task(
             hass.config_entries.flow.async_init(
                 DOMAIN, context={"source": "import"}, data=config[DOMAIN]
@@ -26,7 +27,7 @@ async def async_setup(hass, config):
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up the Velux KLF platforms via Config Flow."""
-    _LOGGER.debug("Setting up velux entry: %s", entry.data)
+    _LOGGER.debug("Setting up velux entry via config flow")
     host = entry.data[CONF_HOST]
     password = entry.data[CONF_PASSWORD]
     gateway = PyVLX(host=host, password=password)
