@@ -123,6 +123,6 @@ class VeluxHeartbeat(SwitchEntity):
         """Turn the entity on."""
         self.pyvlx.heartbeat.start()
 
-    def async_turn_off(self, **kwargs):
+    async def async_turn_off(self, **kwargs):
         """Turn the entity off."""
-        self.pyvlx.heartbeat.stop()
+        await self.pyvlx.heartbeat.stop()
