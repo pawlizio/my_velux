@@ -16,7 +16,7 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup(hass, config):
     """Set up the Velux KLF platform via configuration.yaml."""
     if DOMAIN in config:
-        _LOGGER.warning("Configuration via configuration.yaml will no longer be supported. Please remove your velux entry and use the Integrations Page to add the velux integration.")
+        _LOGGER.warning("Configuration of Velux via YAML is deprecated. Application Credentials have been imported into the UI automatically and can be safely removed from your configuration.yaml file")
     return True
 
 
