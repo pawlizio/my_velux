@@ -62,4 +62,4 @@ class VeluxGatewayRestart(ButtonEntity):
 
     async def async_press(self) -> None:
         """Handle the button press."""
-        self.pyvlx.klf200.reboot()
+        await self.pyvlx.klf200.reboot()
