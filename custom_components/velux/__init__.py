@@ -16,7 +16,11 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup(hass, config):
     """Set up the Velux KLF platform via configuration.yaml."""
     if DOMAIN in config:
-        _LOGGER.warning("Configuration of Velux via YAML is deprecated. Application Credentials have been imported into the UI automatically and can be safely removed from your configuration.yaml file")
+        hass.async_create_task(
+            hass.config_entries.flow.async_init(
+                DOMAIN, context={"source": "import"}, data=config[DOMAIN]
+            )
+        )
     return True
 
 
