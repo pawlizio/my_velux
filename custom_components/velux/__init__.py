@@ -16,6 +16,7 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup(hass, config):
     """Set up the Velux KLF platform via configuration.yaml."""
     if DOMAIN in config:
+        _LOGGER.debug("Please note that configuration of integrations which communicate to external devices should no longer use configuration.yaml setup. Your configuration data has been transferred to integration flow used on the GUI Integration page. You can safely remove your velux entry from configuration.yaml")
         hass.async_create_task(
             hass.config_entries.flow.async_init(
                 DOMAIN, context={"source": "import"}, data=config[DOMAIN]

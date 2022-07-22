@@ -7,7 +7,7 @@
   "zeroconf": [
     {"type":"_http._tcp.local.","name":"velux_klf_lan*"}
     ],
-  "version": "2.5",
+  "version": "2.7",
   "config_flow": true,
   "iot_class": "local_push"
 }
