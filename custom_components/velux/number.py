@@ -45,7 +45,7 @@ class VeluxOpenOrientatoion(NumberEntity):
         self.node.open_orientation_target = int(value)
 
     @property
-    def value(self) -> float:
+    def native_value(self) -> float:
         """Return the entity value to represent the entity state."""
         return self.node.open_orientation_target
 
@@ -93,7 +93,7 @@ class VeluxCloseOrientatoion(NumberEntity):
         self.node.close_orientation_target = int(value)
 
     @property
-    def value(self) -> float:
+    def native_value(self) -> float:
         """Return the entity value to represent the entity state."""
         return self.node.close_orientation_target
 
