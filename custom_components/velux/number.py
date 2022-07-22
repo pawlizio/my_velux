@@ -40,7 +40,7 @@ class VeluxOpenOrientatoion(NumberEntity):
             "name": self.node.name,
         }
 
-    def set_value(self, value):
+    def set_native_value(self, value):
         """Update the current value."""
         self.node.open_orientation_target = int(value)
 
@@ -88,7 +88,7 @@ class VeluxCloseOrientatoion(NumberEntity):
             "name": self.node.name,
         }
 
-    def set_value(self, value):
+    def set_native_value(self, value):
         """Update the current value."""
         self.node.close_orientation_target = int(value)
 
