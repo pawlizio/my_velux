@@ -1,12 +1,14 @@
 """Component to interface with switches that can be controlled remotely."""
+import logging
 
-from pyvlx.opening_device import Blind
+from pyvlx import OnOffSwitch
 
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.components.switch import SwitchEntity, SwitchDeviceClass
 
 from .const import DOMAIN
 
+_LOGGER = logging.getLogger(__name__)
 PARALLEL_UPDATES = 1
 
 
@@ -16,11 +18,15 @@ async def async_setup_entry(hass, entry, async_add_entities):
     gateway = hass.data[DOMAIN][entry.entry_id]
     entities.append(VeluxHouseStatusMonitor(gateway))
     entities.append(VeluxHeartbeat(gateway))
+    for node in gateway.nodes:
+        if isinstance(node, OnOffSwitch):
+            _LOGGER.debug("Switch will be added: %s", node.name)
+            entities.append(VeluxSwitch(node))
     async_add_entities(entities)
 
 
 class VeluxHouseStatusMonitor(SwitchEntity):
-    """Representation of a Velux number."""
+    """Representation of a Velux HouseStatusMonitor switch."""
 
     def __init__(self, gateway):
         """Initialize the cover."""
@@ -74,7 +80,7 @@ class VeluxHouseStatusMonitor(SwitchEntity):
         await self.pyvlx.klf200.house_status_monitor_disable(pyvlx=self.pyvlx)
 
 class VeluxHeartbeat(SwitchEntity):
-    """Representation of a Velux number."""
+    """Representation of a Velux Heartbeat switch."""
 
     def __init__(self, gateway):
         """Initialize the cover."""
@@ -126,3 +132,52 @@ class VeluxHeartbeat(SwitchEntity):
     async def async_turn_off(self, **kwargs):
         """Turn the entity off."""
         await self.pyvlx.heartbeat.stop()
+
+class VeluxSwitch(SwitchEntity):
+    """Representation of a Velux physical switch."""
+
+    def __init__(self, node):
+        """Initialize the cover."""
+        self.node = node
+
+    @property
+    def unique_id(self):
+        """Return the unique ID of this cover."""
+        return self.node.node_id
+
+    @property
+    def device_info(self):
+        return {
+            "identifiers": {
+                (DOMAIN, self.unique_id)
+            },
+            "name": self.name,
+        }
+
+    @property
+    def name(self):
+        """Return the name of the Velux switch."""
+        return self.node.name
+
+    @property
+    def should_poll(self):
+        """No polling needed within Velux."""
+        return False
+
+    @property
+    def device_class(self):
+        """Return the device class of this node."""
+        return SwitchDeviceClass.SWITCH
+
+    @property
+    def is_on(self):
+        """Return the state of the switch"""
+        return self.node.is_on()
+
+    async def async_turn_on(self, **kwargs):
+        """Turn the switch on."""
+        await self.node.set_on()
+
+    async def async_turn_off(self, **kwargs):
+        """Turn the switch off."""
+        await self.node.set_off()

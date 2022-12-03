@@ -35,8 +35,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
     entities = []
     gateway = hass.data[DOMAIN][entry.entry_id]
     for node in gateway.nodes:
-        _LOGGER.debug("Node will be added: %s", node.name)
         if isinstance(node, OpeningDevice):
+            _LOGGER.debug("Cover will be added: %s", node.name)
             entities.append(VeluxCover(node))
     async_add_entities(entities)
 
