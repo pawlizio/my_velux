@@ -5,6 +5,7 @@ from pyvlx import OnOffSwitch
 
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.components.switch import SwitchEntity, SwitchDeviceClass
+from homeassistant.core import callback
 
 from .const import DOMAIN
 
@@ -139,6 +140,20 @@ class VeluxSwitch(SwitchEntity):
     def __init__(self, node):
         """Initialize the cover."""
         self.node = node
+
+    @callback
+    def async_register_callbacks(self):
+        """Register callbacks to update hass after device was changed."""
+
+        async def after_update_callback(device):
+            """Call after device was updated."""
+            self.async_write_ha_state()
+
+        self.node.register_device_updated_cb(after_update_callback)
+
+    async def async_added_to_hass(self):
+        """Store register state change callback."""
+        self.async_register_callbacks()
 
     @property
     def unique_id(self):
