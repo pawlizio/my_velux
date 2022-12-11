@@ -137,12 +137,12 @@ class VeluxCover(CoverEntity):
     @property
     def is_opening(self):
         """Return if the cover is closing or not."""
-        return self.node.is_opening()
+        return self.node.is_opening
 
     @property
     def is_closing(self):
         """Return if the cover is opening or not."""
-        return self.node.is_closing()
+        return self.node.is_closing
 
     async def async_close_cover(self, **kwargs):
         """Close the cover."""
