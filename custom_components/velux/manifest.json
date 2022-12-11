@@ -3,7 +3,7 @@
   "name": "Velux",
   "documentation": "https://www.home-assistant.io/integrations/velux",
   "codeowners": ["@pawlizio"],
-  "requirements": ["git+https://github.com/pawlizio/pyvlx.git@master#pyvlx==0.2.21"],
+  "requirements": ["git+https://github.com/pawlizio/pyvlx.git@master#pyvlx==1.2.21"],
   "zeroconf": [
     {"type":"_http._tcp.local.","name":"velux_klf_lan*"}
     ],
