@@ -145,7 +145,7 @@ class VeluxCover(CoverEntity):
     def device_info(self):
         return {
             "identifiers": {
-                (DOMAIN, self.name.node_id)
+                (DOMAIN, self.node.node_id)
             },
             "name": self.name,
         }
