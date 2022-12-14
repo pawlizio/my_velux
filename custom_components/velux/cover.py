@@ -72,7 +72,7 @@ class VeluxCover(CoverEntity):
     def unique_id(self):
         """Return the unique ID of this cover."""
         if self.subtype is None:
-            unique_id = str(self.node.node_id)
+            unique_id = self.node.node_id
         else: 
             unique_id = str(self.node.node_id) + "_" + self.subtype
         return unique_id
