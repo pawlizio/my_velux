@@ -2,7 +2,7 @@
 import logging
 
 from pyvlx import OpeningDevice, Position
-from pyvlx.opening_device import Awning, Blind, GarageDoor, Gate, RollerShutter, Window
+from pyvlx.opening_device import Awning, Blind, DualRollerShutter, GarageDoor, Gate, RollerShutter, Window
 
 from homeassistant.components.cover import (
     ATTR_POSITION,
@@ -25,7 +25,7 @@ from homeassistant.components.cover import (
 )
 from homeassistant.core import callback
 
-from .const import DOMAIN
+from .const import DOMAIN, UPPER_COVER, LOWER_COVER
 
 _LOGGER = logging.getLogger(__name__)
 PARALLEL_UPDATES = 1
@@ -35,7 +35,12 @@ async def async_setup_entry(hass, entry, async_add_entities):
     entities = []
     gateway = hass.data[DOMAIN][entry.entry_id]
     for node in gateway.nodes:
-        if isinstance(node, OpeningDevice):
+        if isinstance(node, DualRollerShutter):
+            _LOGGER.debug("Cover will be added: %s", node.name)
+            entities.append(VeluxCover(node))
+            entities.append(VeluxCover(node, subtype=UPPER_COVER))
+            entities.append(VeluxCover(node, subtype=LOWER_COVER))
+        elif isinstance(node, OpeningDevice):
             _LOGGER.debug("Cover will be added: %s", node.name)
             entities.append(VeluxCover(node))
     async_add_entities(entities)
@@ -44,9 +49,10 @@ async def async_setup_entry(hass, entry, async_add_entities):
 class VeluxCover(CoverEntity):
     """Representation of a Velux cover."""
 
-    def __init__(self, node):
+    def __init__(self, node, subtype=None):
         """Initialize the cover."""
         self.node = node
+        self.subtype = subtype
 
     @callback
     def async_register_callbacks(self):
@@ -65,12 +71,20 @@ class VeluxCover(CoverEntity):
     @property
     def unique_id(self):
         """Return the unique ID of this cover."""
-        return self.node.node_id
+        if self.subtype is None:
+            unique_id = self.node.node_id
+        else: 
+            unique_id = self.node.node_id + "_" + self.subtype
+        return unique_id
 
     @property
     def name(self):
         """Return the name of the Velux device."""
-        return self.node.name
+        if self.subtype is None:
+            name = self.node.name
+        else: 
+            name = self.node.name + "_" + self.subtype
+        return name
 
     @property
     def should_poll(self):
@@ -95,7 +109,12 @@ class VeluxCover(CoverEntity):
     @property
     def current_cover_position(self):
         """Return the current position of the cover."""
-        return 100 - self.node.position.position_percent
+        if self.subtype is None:
+            return 100 - self.node.position.position_percent
+        if self.subtype == UPPER_COVER:
+            return 100 - self.node.position_upper_curtain.position_percent
+        if self.subtype == LOWER_COVER:
+            return 100 - self.node.position_lower_curtain.position_percent
 
     @property
     def current_cover_tilt_position(self):
@@ -116,6 +135,8 @@ class VeluxCover(CoverEntity):
             return DEVICE_CLASS_GATE
         if isinstance(self.node, RollerShutter):
             return DEVICE_CLASS_SHUTTER
+        if isinstance(self.node, DualRollerShutter):
+            return DEVICE_CLASS_SHUTTER
         if isinstance(self.node, Window):
             return DEVICE_CLASS_WINDOW
         return DEVICE_CLASS_WINDOW
@@ -124,7 +145,7 @@ class VeluxCover(CoverEntity):
     def device_info(self):
         return {
             "identifiers": {
-                (DOMAIN, self.unique_id)
+                (DOMAIN, self.name.node_id)
             },
             "name": self.name,
         }
@@ -146,23 +167,50 @@ class VeluxCover(CoverEntity):
 
     async def async_close_cover(self, **kwargs):
         """Close the cover."""
-        await self.node.close(wait_for_completion=False)
+        if self.subtype is None:
+            await self.node.close(wait_for_completion=False)
+        if self.subtype == UPPER_COVER:
+            await self.node.close_upper_curtain(wait_for_completion=False)
+        if self.subtype == LOWER_COVER:
+            await self.node.close_lower_curtain(wait_for_completion=False)
 
     async def async_open_cover(self, **kwargs):
         """Open the cover."""
-        await self.node.open(wait_for_completion=False)
+        if self.subtype is None:
+            await self.node.open(wait_for_completion=False)
+        if self.subtype == UPPER_COVER:
+            await self.node.open_upper_curtain(wait_for_completion=False)
+        if self.subtype == LOWER_COVER:
+            await self.node.open_lower_curtain(wait_for_completion=False)
+
 
     async def async_set_cover_position(self, **kwargs):
         """Move the cover to a specific position."""
         if ATTR_POSITION in kwargs:
             position_percent = 100 - kwargs[ATTR_POSITION]
-            await self.node.set_position(
-                Position(position_percent=position_percent), wait_for_completion=False
-            )
+            position = Position(position_percent=position_percent)
+            if self.subtype is None:
+                await self.node.set_position(
+                    position=position, wait_for_completion=False
+                )
+            if self.subtype == UPPER_COVER:
+                await self.node.set_position(
+                    position_upper_curtain=position, wait_for_completion=False
+                )
+            if self.subtype == LOWER_COVER:
+                await self.node.set_position(
+                    position_lower_curtain=position, wait_for_completion=False
+                )
 
     async def async_stop_cover(self, **kwargs):
         """Stop the cover."""
-        await self.node.stop(wait_for_completion=False)
+        if self.subtype is None:
+            await self.node.stop(wait_for_completion=False)
+        if self.subtype == UPPER_COVER:
+            await self.node.stop_upper_curtain(wait_for_completion=False)
+        if self.subtype == LOWER_COVER:
+            await self.node.stop_lower_curtain(wait_for_completion=False)
+
 
     async def async_close_cover_tilt(self, **kwargs):
         """Close cover tilt."""
