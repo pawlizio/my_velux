@@ -36,10 +36,12 @@ async def async_setup_entry(hass, entry, async_add_entities):
     gateway = hass.data[DOMAIN][entry.entry_id]
     for node in gateway.nodes:
         if isinstance(node, DualRollerShutter):
-            _LOGGER.debug("Cover will be added: %s", node.name)
             entities.append(VeluxCover(node, subtype=DUAL_COVER))
+            _LOGGER.debug("Cover added: %s_%s", node.name, DUAL_COVER)
             entities.append(VeluxCover(node, subtype=UPPER_COVER))
+            _LOGGER.debug("Cover added: %s_%s", node.name, UPPER_COVER)
             entities.append(VeluxCover(node, subtype=LOWER_COVER))
+            _LOGGER.debug("Cover added: %s_%s", node.name, LOWER_COVER)
         elif isinstance(node, OpeningDevice):
             _LOGGER.debug("Cover will be added: %s", node.name)
             entities.append(VeluxCover(node))
