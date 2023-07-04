@@ -35,6 +35,16 @@ open_cover:
   target:
     entity:
       domain: cover
+  fields:
+    velocity:
+      name: Velocity
+      description: Velocity of the movement, percent
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: "%"
 
 close_cover:
   name: Close
@@ -42,3 +52,13 @@ close_cover:
   target:
     entity:
       domain: cover
+  fields:
+    velocity:
+      name: Velocity
+      description: Velocity of the movement, percent
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: "%"

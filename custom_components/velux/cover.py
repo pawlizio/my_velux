@@ -56,9 +56,6 @@ async def async_setup_entry(hass, entry, async_add_entities):
     platform.async_register_entity_service(
         SERVICE_OPEN_COVER,
         {
-            vol.Required(ATTR_POSITION): vol.All(
-                vol.Coerce(int), vol.Range(min=0, max=100)
-            ),
             vol.Optional(ATTR_VELOCITY): vol.All(
                 vol.Coerce(int), vol.Range(min=0, max=100)
             )
@@ -70,9 +67,6 @@ async def async_setup_entry(hass, entry, async_add_entities):
     platform.async_register_entity_service(
         SERVICE_CLOSE_COVER,
         {
-            vol.Required(ATTR_POSITION): vol.All(
-                vol.Coerce(int), vol.Range(min=0, max=100)
-            ),
             vol.Optional(ATTR_VELOCITY): vol.All(
                 vol.Coerce(int), vol.Range(min=0, max=100)
             )
