@@ -2,3 +2,63 @@
 
 reboot_gateway:
   description: Reboots the KLF200 Gateway.
+
+set_cover_position:
+  name: Set position
+  description: Move to specific position all or specified cover.
+  target:
+    entity:
+      domain: cover
+  fields:
+    position:
+      name: Position
+      description: Position of the cover
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: "%"
+    velocity:
+      name: Velocity
+      description: Velocity of the movement, percent
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: "%"
+
+open_cover:
+  name: Open
+  description: Open all or specified cover.
+  target:
+    entity:
+      domain: cover
+  fields:
+    velocity:
+      name: Velocity
+      description: Velocity of the movement, percent
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: "%"
+
+close_cover:
+  name: Close
+  description: Close all or specified cover.
+  target:
+    entity:
+      domain: cover
+  fields:
+    velocity:
+      name: Velocity
+      description: Velocity of the movement, percent
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: "%"

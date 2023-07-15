@@ -1,6 +1,8 @@
 """Support for Velux covers."""
 import logging
 
+from homeassistant.const import SERVICE_OPEN_COVER, SERVICE_CLOSE_COVER, SERVICE_SET_COVER_POSITION
+from homeassistant.helpers.entity_platform import async_get_current_platform
 from pyvlx import OpeningDevice, Position
 from pyvlx.opening_device import Awning, Blind, DualRollerShutter, GarageDoor, Gate, RollerShutter, Window
 
@@ -21,14 +23,17 @@ from homeassistant.components.cover import (
     SUPPORT_SET_TILT_POSITION,
     SUPPORT_STOP,
     SUPPORT_STOP_TILT,
-    CoverEntity,
+    CoverEntity, CoverEntityFeature,
 )
 from homeassistant.core import callback
 
-from .const import DOMAIN, DUAL_COVER, UPPER_COVER, LOWER_COVER
+from .const import ATTR_VELOCITY, DOMAIN, DUAL_COVER, UPPER_COVER, LOWER_COVER
+
+import voluptuous as vol
 
 _LOGGER = logging.getLogger(__name__)
 PARALLEL_UPDATES = 1
+
 
 async def async_setup_entry(hass, entry, async_add_entities):
     """Set up cover(s) for Velux platform."""
@@ -46,6 +51,43 @@ async def async_setup_entry(hass, entry, async_add_entities):
             _LOGGER.debug("Cover will be added: %s", node.name)
             entities.append(VeluxCover(node))
     async_add_entities(entities)
+
+    platform = async_get_current_platform()
+    platform.async_register_entity_service(
+        SERVICE_OPEN_COVER,
+        {
+            vol.Optional(ATTR_VELOCITY): vol.All(
+                vol.Coerce(int), vol.Range(min=0, max=100)
+            )
+        },
+        "async_open_cover",
+        [CoverEntityFeature.OPEN]
+    )
+
+    platform.async_register_entity_service(
+        SERVICE_CLOSE_COVER,
+        {
+            vol.Optional(ATTR_VELOCITY): vol.All(
+                vol.Coerce(int), vol.Range(min=0, max=100)
+            )
+        },
+        "async_close_cover",
+        [CoverEntityFeature.CLOSE]
+    )
+
+    platform.async_register_entity_service(
+        SERVICE_SET_COVER_POSITION,
+        {
+            vol.Required(ATTR_POSITION): vol.All(
+                vol.Coerce(int), vol.Range(min=0, max=100)
+            ),
+            vol.Optional(ATTR_VELOCITY): vol.All(
+                vol.Coerce(int), vol.Range(min=0, max=100)
+            )
+        },
+        "async_set_cover_position",
+        [CoverEntityFeature.SET_POSITION],
+    )
 
 
 class VeluxCover(CoverEntity):
@@ -169,28 +211,45 @@ class VeluxCover(CoverEntity):
 
     async def async_close_cover(self, **kwargs):
         """Close the cover."""
-        if self.subtype is None:
-            await self.node.close(wait_for_completion=False)
-        else: 
-            await self.node.close(wait_for_completion=False, curtain=self.subtype)
 
+        if 'velocity' in kwargs:
+            velocity = kwargs['velocity']
+        else:
+            velocity = None
+
+        if self.subtype is None:
+            await self.node.close(wait_for_completion=False, velocity=velocity)
+        else: 
+            await self.node.close(wait_for_completion=False, velocity=velocity, curtain=self.subtype)
 
     async def async_open_cover(self, **kwargs):
         """Open the cover."""
-        if self.subtype is None:
-            await self.node.open(wait_for_completion=False)
+
+        if 'velocity' in kwargs:
+            velocity = kwargs['velocity']
         else:
-            await self.node.open(wait_for_completion=False, curtain=self.subtype)
+            velocity = None
+
+        if self.subtype is None:
+            await self.node.open(wait_for_completion=False, velocity=velocity)
+        else:
+            await self.node.open(wait_for_completion=False, velocity=velocity, curtain=self.subtype)
 
     async def async_set_cover_position(self, **kwargs):
         """Move the cover to a specific position."""
         if ATTR_POSITION in kwargs:
             position_percent = 100 - kwargs[ATTR_POSITION]
             position = Position(position_percent=position_percent)
-            if self.subtype is None:
-                await self.node.set_position(position=position, wait_for_completion=False)
+
+            if 'velocity' in kwargs:
+                velocity = kwargs['velocity']
             else:
-                await self.node.set_position(position=position, wait_for_completion=False, curtain=self.subtype)
+                velocity = None
+
+            if self.subtype is None:
+                await self.node.set_position(position=position, velocity=velocity, wait_for_completion=False)
+            else:
+                await self.node.set_position(position=position, velocity=velocity, wait_for_completion=False, curtain=self.subtype)
 
     async def async_stop_cover(self, **kwargs):
         """Stop the cover."""
@@ -198,7 +257,6 @@ class VeluxCover(CoverEntity):
             await self.node.stop(wait_for_completion=False)
         else:
             await self.node.stop(wait_for_completion=False, curtain=self.subtype)
-
 
     async def async_close_cover_tilt(self, **kwargs):
         """Close cover tilt."""
