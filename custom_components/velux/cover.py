@@ -1,4 +1,5 @@
 """Support for Velux covers."""
+import inspect
 import logging
 
 from homeassistant.const import SERVICE_OPEN_COVER, SERVICE_CLOSE_COVER, SERVICE_SET_COVER_POSITION
@@ -212,28 +213,32 @@ class VeluxCover(CoverEntity):
     async def async_close_cover(self, **kwargs):
         """Close the cover."""
 
-        if 'velocity' in kwargs:
-            velocity = kwargs['velocity']
-        else:
-            velocity = None
+        close_args = {
+            "wait_for_completion": False
+        }
 
-        if self.subtype is None:
-            await self.node.close(wait_for_completion=False, velocity=velocity)
-        else: 
-            await self.node.close(wait_for_completion=False, velocity=velocity, curtain=self.subtype)
+        if 'velocity' in kwargs and 'velocity' in inspect.getfullargspec(self.node.close).args:
+            close_args["velocity"] = kwargs["velocity"]
+
+        if self.subtype is not None:
+            close_args["curtain"] = self.subtype
+
+        await self.node.close(**kwargs)
 
     async def async_open_cover(self, **kwargs):
         """Open the cover."""
 
-        if 'velocity' in kwargs:
-            velocity = kwargs['velocity']
-        else:
-            velocity = None
+        open_args = {
+            "wait_for_completion": False
+        }
 
-        if self.subtype is None:
-            await self.node.open(wait_for_completion=False, velocity=velocity)
-        else:
-            await self.node.open(wait_for_completion=False, velocity=velocity, curtain=self.subtype)
+        if 'velocity' in kwargs and 'velocity' in inspect.getfullargspec(self.node.open).args:
+            open_args["velocity"] = kwargs["velocity"]
+
+        if self.subtype is not None:
+            open_args["curtain"] = self.subtype
+
+        await self.node.open(**kwargs)
 
     async def async_set_cover_position(self, **kwargs):
         """Move the cover to a specific position."""
@@ -241,15 +246,17 @@ class VeluxCover(CoverEntity):
             position_percent = 100 - kwargs[ATTR_POSITION]
             position = Position(position_percent=position_percent)
 
-            if 'velocity' in kwargs:
-                velocity = kwargs['velocity']
-            else:
-                velocity = None
+            set_pos_args = {
+                "wait_for_completion": False
+            }
 
-            if self.subtype is None:
-                await self.node.set_position(position=position, velocity=velocity, wait_for_completion=False)
-            else:
-                await self.node.set_position(position=position, velocity=velocity, wait_for_completion=False, curtain=self.subtype)
+            if 'velocity' in kwargs and 'velocity' in inspect.getfullargspec(self.node.set_position).args:
+                set_pos_args["velocity"] = kwargs["velocity"]
+
+            if self.subtype is not None:
+                set_pos_args["curtain"] = self.subtype
+
+            await self.node.set_position(position, **set_pos_args)
 
     async def async_stop_cover(self, **kwargs):
         """Stop the cover."""
