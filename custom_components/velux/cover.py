@@ -223,7 +223,7 @@ class VeluxCover(CoverEntity):
         if self.subtype is not None:
             close_args["curtain"] = self.subtype
 
-        await self.node.close(**kwargs)
+        await self.node.close(**close_args)
 
     async def async_open_cover(self, **kwargs):
         """Open the cover."""
@@ -238,7 +238,7 @@ class VeluxCover(CoverEntity):
         if self.subtype is not None:
             open_args["curtain"] = self.subtype
 
-        await self.node.open(**kwargs)
+        await self.node.open(**open_args)
 
     async def async_set_cover_position(self, **kwargs):
         """Move the cover to a specific position."""
