@@ -8,7 +8,7 @@ from homeassistant.const import CONF_HOST, CONF_PASSWORD
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 
-from .const import DOMAIN, PLATFORMS
+from .const import CONF_HEARTBEAT_INTERVAL, CONF_HEARTBEAT_LOAD_ALL_STATES, DOMAIN, PLATFORMS
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -28,9 +28,17 @@ async def async_setup(hass, config):
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up the Velux KLF platforms via Config Flow."""
     _LOGGER.debug("Setting up velux entry via config flow")
-    host = entry.data[CONF_HOST]
-    password = entry.data[CONF_PASSWORD]
-    gateway = PyVLX(host=host, password=password)
+    pyvlx_args = {
+        "host": entry.data[CONF_HOST],
+        "password": entry.data[CONF_PASSWORD]
+    }
+
+    if CONF_HEARTBEAT_INTERVAL in entry.data:
+        pyvlx_args["heartbeat_interval"] = entry.data[CONF_HEARTBEAT_INTERVAL]
+    if CONF_HEARTBEAT_LOAD_ALL_STATES in entry.data:
+        pyvlx_args["heartbeat_load_all_states"] = entry.data[CONF_HEARTBEAT_LOAD_ALL_STATES]
+
+    gateway = PyVLX(**pyvlx_args)
 
     try: 
         await gateway.connect()

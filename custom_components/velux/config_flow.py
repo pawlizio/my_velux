@@ -8,7 +8,7 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import CONF_HOST, CONF_PASSWORD
 
-from .const import DOMAIN
+from .const import CONF_HEARTBEAT_INTERVAL, CONF_HEARTBEAT_LOAD_ALL_STATES, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -25,12 +25,14 @@ class VeluxConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._host = None
         self._password = None
         self._hostname = None
+        self._heartbeat_interval = 30
+        self._heartbeat_load_all_states = True
         self.bridge = None
 
     def _get_entry(self):
         return self.async_create_entry(
             title=self._host,
-            data={CONF_HOST: self._host, CONF_PASSWORD: self._password},
+            data={CONF_HOST: self._host, CONF_PASSWORD: self._password, CONF_HEARTBEAT_INTERVAL: self._heartbeat_interval, CONF_HEARTBEAT_LOAD_ALL_STATES: self._heartbeat_load_all_states},
         )
 
     async def async_step_import(self, user_input=None):
@@ -43,6 +45,14 @@ class VeluxConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             self._host = user_input[CONF_HOST]
             self._password = user_input[CONF_PASSWORD]
+            if CONF_HEARTBEAT_INTERVAL in user_input:
+                self._heartbeat_interval = user_input[CONF_HEARTBEAT_INTERVAL]
+            else:
+                self._heartbeat_interval = 30
+            if CONF_HEARTBEAT_LOAD_ALL_STATES in user_input:
+                self._heartbeat_load_all_states = user_input[CONF_HEARTBEAT_LOAD_ALL_STATES]
+            else:
+                self._heartbeat_load_all_states = True
             await self.async_set_unique_id(self._host)
             self._abort_if_unique_id_configured()
             self.bridge = PyVLX(host=self._host, password=self._password)
@@ -62,6 +72,8 @@ class VeluxConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             {
                 vol.Required(CONF_HOST, default=self._host): str,
                 vol.Required(CONF_PASSWORD, default=self._password): str,
+                vol.Required(CONF_HEARTBEAT_INTERVAL, default=self._heartbeat_interval): int,
+                vol.Required(CONF_HEARTBEAT_LOAD_ALL_STATES, default=self._heartbeat_load_all_states): bool,
             }
         )
 

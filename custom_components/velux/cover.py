@@ -1,4 +1,5 @@
 """Support for Velux covers."""
+import asyncio
 import logging
 
 from homeassistant.const import SERVICE_OPEN_COVER, SERVICE_CLOSE_COVER, SERVICE_SET_COVER_POSITION
@@ -97,6 +98,7 @@ class VeluxCover(CoverEntity):
         """Initialize the cover."""
         self.node = node
         self.subtype = subtype
+        self.is_looping_while_moving: bool = False
 
     @callback
     def async_register_callbacks(self):
@@ -105,6 +107,16 @@ class VeluxCover(CoverEntity):
         async def after_update_callback(device):
             """Call after device was updated."""
             self.async_write_ha_state()
+            if self.node.is_moving():
+                _LOGGER.debug("cover %s is moving" % self.name)
+                if not self.is_looping_while_moving:
+                    _LOGGER.debug("cover %s is moving, starting watch loop" % self.name)
+                    self.is_looping_while_moving = True
+                    while self.node.is_moving():
+                        await asyncio.sleep(1)
+                        self.async_write_ha_state()
+                    self.is_looping_while_moving = False
+                    _LOGGER.debug("cover %s stopped moving, stopped watch loop" % self.name)
 
         self.node.register_device_updated_cb(after_update_callback)
 
@@ -158,7 +170,7 @@ class VeluxCover(CoverEntity):
         elif self.subtype == LOWER_COVER:
             return 100 - self.node.position_lower_curtain.position_percent
         else:
-            return 100 - self.node.position.position_percent
+            return 100 - self.node.get_position().position_percent
 
     @property
     def current_cover_tilt_position(self):
