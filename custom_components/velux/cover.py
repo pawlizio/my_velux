@@ -2,11 +2,10 @@
 import inspect
 import logging
 
-from homeassistant.const import SERVICE_OPEN_COVER, SERVICE_CLOSE_COVER, SERVICE_SET_COVER_POSITION
-from homeassistant.helpers.entity_platform import async_get_current_platform
-from pyvlx import OpeningDevice, Position
-from pyvlx.opening_device import Awning, Blind, DualRollerShutter, GarageDoor, Gate, RollerShutter, Window
+from datetime import timedelta
+from typing import TYPE_CHECKING
 
+from homeassistant.const import SERVICE_OPEN_COVER, SERVICE_CLOSE_COVER, SERVICE_SET_COVER_POSITION
 from homeassistant.components.cover import (
     ATTR_POSITION,
     ATTR_TILT_POSITION,
@@ -26,14 +25,24 @@ from homeassistant.components.cover import (
     SUPPORT_STOP_TILT,
     CoverEntity, CoverEntityFeature,
 )
-from homeassistant.core import callback
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.entity_platform import async_get_current_platform
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+
+from pyvlx import OpeningDevice, Position
+from pyvlx.exception import PyVLXException
+from pyvlx.opening_device import Awning, Blind, DualRollerShutter, GarageDoor, Gate, RollerShutter, Window
 
 from .const import ATTR_VELOCITY, DOMAIN, DUAL_COVER, UPPER_COVER, LOWER_COVER
 
 import voluptuous as vol
 
+if TYPE_CHECKING:
+    from pyvlx.node import Node
+
 _LOGGER = logging.getLogger(__name__)
 PARALLEL_UPDATES = 1
+DEFAULT_SCAN_INTERVAL = timedelta(minutes=2)
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
@@ -49,8 +58,12 @@ async def async_setup_entry(hass, entry, async_add_entities):
             entities.append(VeluxCover(node, subtype=LOWER_COVER))
             _LOGGER.debug("Cover added: %s_%s", node.name, LOWER_COVER)
         elif isinstance(node, OpeningDevice):
-            _LOGGER.debug("Cover will be added: %s", node.name)
-            entities.append(VeluxCover(node))
+            if isinstance(node, Window):
+                _LOGGER.debug("Window will be added: %s", node.name)
+                entities.append(VeluxWindow(hass, node))
+            else:
+                _LOGGER.debug("Cover will be added: %s", node.name)
+                entities.append(VeluxCover(node))
     async_add_entities(entities)
 
     platform = async_get_current_platform()
@@ -285,3 +298,61 @@ class VeluxCover(CoverEntity):
             await self.node.set_orientation(
                 orientation=orientation, wait_for_completion=False
             )
+
+class VeluxWindow(VeluxCover):
+    """Representation of a Velux window."""
+
+    def __init__(self, hass: HomeAssistant, node: Node) -> None:
+        """Initialize Velux window."""
+        super().__init__(node)
+        self._hass = hass
+        self._extra_attr_limitation_min: int | None = None
+        self._extra_attr_limitation_max: int | None = None
+
+        self.coordinator = DataUpdateCoordinator(
+            self._hass,
+            _LOGGER,
+            name=self.unique_id,
+            update_method=self.async_update_limitation,
+            update_interval=DEFAULT_SCAN_INTERVAL,
+        )
+
+    async def async_init(self):
+        """Async initialize."""
+        return await self.coordinator.async_config_entry_first_refresh()
+
+    async def async_update_limitation(self):
+        """Get the updated status of the cover (limitations only)."""
+        try:
+            limitation = await self.node.get_limitation()
+            self._extra_attr_limitation_min = limitation.min_value
+            self._extra_attr_limitation_max = limitation.max_value
+        except PyVLXException:
+            _LOGGER.error("Error fetch limitation data for cover %s", self.name)
+
+    @property
+    def extra_state_attributes(self) -> dict[str, int | None]:
+        """Return the state attributes."""
+        return {
+            "limitation_min": self._extra_attr_limitation_min,
+            "limitation_max": self._extra_attr_limitation_max,
+        }
+
+    async def async_added_to_hass(self) -> None:
+        """When entity is added to hass."""
+        await super().async_added_to_hass()
+        self.async_on_remove(
+            self.coordinator.async_add_listener(self._handle_coordinator_update)
+        )
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        self.async_write_ha_state()
+
+    async def async_update(self) -> None:
+        """Update the entity.
+
+        Only used by the generic entity update service.
+        """
+        await self.coordinator.async_request_refresh()
