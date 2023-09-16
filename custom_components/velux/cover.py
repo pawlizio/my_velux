@@ -4,7 +4,6 @@ import inspect
 import logging
 
 from datetime import timedelta
-from typing import TYPE_CHECKING
 
 from homeassistant.const import SERVICE_OPEN_COVER, SERVICE_CLOSE_COVER, SERVICE_SET_COVER_POSITION
 from homeassistant.components.cover import (
@@ -26,7 +25,7 @@ from homeassistant.components.cover import (
     SUPPORT_STOP_TILT,
     CoverEntity, CoverEntityFeature,
 )
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import callback
 from homeassistant.helpers.entity_platform import async_get_current_platform
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
@@ -37,9 +36,6 @@ from pyvlx.opening_device import Awning, Blind, DualRollerShutter, GarageDoor, G
 from .const import ATTR_VELOCITY, DOMAIN, DUAL_COVER, UPPER_COVER, LOWER_COVER
 
 import voluptuous as vol
-
-if TYPE_CHECKING:
-    from pyvlx.node import Node
 
 _LOGGER = logging.getLogger(__name__)
 PARALLEL_UPDATES = 1
@@ -314,7 +310,7 @@ class VeluxCover(CoverEntity):
 class VeluxWindow(VeluxCover):
     """Representation of a Velux window."""
 
-    def __init__(self, hass: HomeAssistant, node: Node) -> None:
+    def __init__(self, hass, node) -> None:
         """Initialize Velux window."""
         super().__init__(node)
         self._hass = hass
