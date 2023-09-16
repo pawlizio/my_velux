@@ -1,5 +1,6 @@
 """Support for Velux lights."""
 from __future__ import annotations
+import logging
 
 from pyvlx import Intensity, LighteningDevice
 from pyvlx.node import Node
