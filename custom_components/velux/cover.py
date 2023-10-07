@@ -1,5 +1,6 @@
 """Support for Velux covers."""
 import asyncio
+import backoff
 import inspect
 import logging
 
@@ -231,6 +232,7 @@ class VeluxCover(CoverEntity):
         """Return if the cover is opening or not."""
         return self.node.is_closing
 
+    @backoff.on_exception(backoff.expo, PyVLXException, max_time=30)
     async def async_close_cover(self, **kwargs):
         """Close the cover."""
 
@@ -246,6 +248,7 @@ class VeluxCover(CoverEntity):
 
         await self.node.close(**close_args)
 
+    @backoff.on_exception(backoff.expo, PyVLXException, max_time=30)
     async def async_open_cover(self, **kwargs):
         """Open the cover."""
 
@@ -261,6 +264,7 @@ class VeluxCover(CoverEntity):
 
         await self.node.open(**open_args)
 
+    @backoff.on_exception(backoff.expo, PyVLXException, max_time=30)
     async def async_set_cover_position(self, **kwargs):
         """Move the cover to a specific position."""
         if ATTR_POSITION in kwargs:
@@ -279,6 +283,7 @@ class VeluxCover(CoverEntity):
 
             await self.node.set_position(position, **set_pos_args)
 
+    @backoff.on_exception(backoff.expo, PyVLXException, max_time=30)
     async def async_stop_cover(self, **kwargs):
         """Stop the cover."""
         if self.subtype is None:
@@ -286,18 +291,22 @@ class VeluxCover(CoverEntity):
         else:
             await self.node.stop(wait_for_completion=False, curtain=self.subtype)
 
+    @backoff.on_exception(backoff.expo, PyVLXException, max_time=30)
     async def async_close_cover_tilt(self, **kwargs):
         """Close cover tilt."""
         await self.node.close_orientation(wait_for_completion=False)
 
+    @backoff.on_exception(backoff.expo, PyVLXException, max_time=30)
     async def async_open_cover_tilt(self, **kwargs):
         """Open cover tilt."""
         await self.node.open_orientation(wait_for_completion=False)
 
+    @backoff.on_exception(backoff.expo, PyVLXException, max_time=30)
     async def async_stop_cover_tilt(self, **kwargs):
         """Stop cover tilt."""
         await self.node.stop_orientation(wait_for_completion=False)
 
+    @backoff.on_exception(backoff.expo, PyVLXException, max_time=30)
     async def async_set_cover_tilt_position(self, **kwargs):
         """Move the cover to a specific position."""
         if ATTR_TILT_POSITION in kwargs:
