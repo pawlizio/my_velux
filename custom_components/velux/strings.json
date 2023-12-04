@@ -7,9 +7,7 @@
         "description": "Please enter your password, you will find it on the backside of the KLF200",
         "data": {
           "host": "[%key:common::config_flow::data::host%]",
-          "password": "[%key:common::config_flow::data::password%]",
-          "heartbeat_interval": "[%key:common::config_flow::data::heartbeat_interval%]",
-          "heartbeat_load_all_states": "[%key:common::config_flow::data::heartbeat_load_all_states%]"
+          "password": "[%key:common::config_flow::data::password%]"
         }
       }
     },
