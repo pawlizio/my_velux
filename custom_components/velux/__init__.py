@@ -75,8 +75,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unloading the Velux platform."""
     pyvlx: PyVLX = hass.data[DOMAIN][entry.entry_id]
-    # Reboot gateway before disconnect will avoid unresponsive KLF200
-    await pyvlx.reboot_gateway()
+    # Disconnect from KLF200
     await pyvlx.disconnect()
 
     # Unload velux platform components
