@@ -1,6 +1,7 @@
 """Support for Velux covers."""
 from __future__ import annotations
 
+import asyncio
 from datetime import timedelta
 import inspect
 import logging
@@ -132,6 +133,7 @@ class VeluxCover(VeluxNodeEntity, CoverEntity):
             self._attr_device_class = CoverDeviceClass.SHUTTER
         if isinstance(node, Window):
             self._attr_device_class = CoverDeviceClass.WINDOW
+        self.is_looping_while_moving: bool = False
 
     @property
     def supported_features(self) -> CoverEntityFeature:
@@ -181,6 +183,22 @@ class VeluxCover(VeluxNodeEntity, CoverEntity):
     def is_closing(self) -> bool:
         """Return if the cover is opening or not."""
         return self.node.is_closing
+
+    @callback
+    def async_register_callbacks(self) -> None:
+        """Register callbacks to update hass after device was changed."""
+
+        async def after_update_callback(device) -> None:
+            """Call after device was updated."""
+            self.async_write_ha_state()
+            if self.node.is_moving():
+                if not self.is_looping_while_moving:
+                    self.is_looping_while_moving = True
+                    while self.node.is_moving():
+                        await asyncio.sleep(1)
+                        self.async_write_ha_state()
+                    self.is_looping_while_moving = False
+        self.node.register_device_updated_cb(after_update_callback)
 
     async def async_close_cover(self, **kwargs: Any) -> None:
         """Close the cover."""
