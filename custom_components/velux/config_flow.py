@@ -59,8 +59,7 @@ class VeluxConfigFlow(ConfigFlow, domain=DOMAIN):
                 errors["base"] = "invalid_auth"
             except OSError:
                 errors["base"] = "invalid_host"
-            else:
-                errors["base"] = "cannot_connect"
+            errors["base"] = "cannot_connect"
 
         data_schema = vol.Schema(
             {
