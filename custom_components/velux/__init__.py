@@ -77,6 +77,7 @@ async def async_unload_entry(hass, entry):
 
     return True
 
+
 class VeluxEntity(Entity):
     """Abstraction for al Velux entities."""
 

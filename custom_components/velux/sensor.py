@@ -62,11 +62,15 @@ class VeluxConnectionState(BinarySensorEntity):
 
     async def turn_on(self):
         """Turn the sensor on."""
-        self._attr_is_on = True
+        if not self._attr_is_on:
+            self._attr_is_on = True
+            self.async_write_ha_state()
 
     async def turn_off(self):
         """Turn the sensor off."""
-        self._attr_is_on = True
+        if self._attr_is_on:
+            self._attr_is_on = False
+            self.async_write_ha_state()
 
     @property
     def name(self):
