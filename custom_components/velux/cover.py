@@ -231,6 +231,11 @@ class VeluxCover(CoverEntity):
         """Return if the cover is opening or not."""
         return self.node.is_closing
 
+    @property
+    def available(self) -> bool:
+        """Return entity availability."""
+        return self.node.is_available
+
     async def async_close_cover(self, **kwargs):
         """Close the cover."""
 
