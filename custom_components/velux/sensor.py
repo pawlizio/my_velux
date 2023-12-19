@@ -57,8 +57,8 @@ class VeluxConnectionState(BinarySensorEntity):
         """Initialize the cover."""
         self.pyvlx = gateway
         self._attr_is_on = False
-        self.pyvlx.register_connection_opened_cb(self.turn_on)
-        self.pyvlx.register_connection_closed_cb(self.turn_off)
+        self.pyvlx.connection.register_connection_opened_cb(self.turn_on)
+        self.pyvlx.connection.register_connection_closed_cb(self.turn_off)
 
     async def turn_on(self):
         """Turn the sensor on."""
@@ -71,7 +71,7 @@ class VeluxConnectionState(BinarySensorEntity):
     @property
     def name(self):
         """Name of the entity."""
-        return "KLF200 Connection Counter"
+        return "KLF200 Connection State"
 
     @property
     def device_info(self):
