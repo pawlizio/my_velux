@@ -127,6 +127,7 @@ class VeluxCover(CoverEntity):
                         self.async_write_ha_state()
                     self.is_looping_while_moving = False
                     _LOGGER.debug("cover %s stopped moving, stopped watch loop" % self.name)
+                    self.node.unregister_device_updated_cb(after_update_callback)
 
         self.node.register_device_updated_cb(after_update_callback)
 
