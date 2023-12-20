@@ -20,5 +20,45 @@
             }
         }
     },
+    "services": {
+        "close_cover": {
+            "description": "Close all or specified cover.",
+            "fields": {
+                "velocity": {
+                    "description": "Desired velocity percentage of the movement.",
+                    "name": "Velocity"
+                }
+            },
+            "name": "Close"
+        },
+        "open_cover": {
+            "description": "Open all or specified cover.",
+            "fields": {
+                "velocity": {
+                    "description": "Desired velocity percentage of the movement.",
+                    "name": "Velocity"
+                }
+            },
+            "name": "Open"
+        },
+        "reboot_gateway": {
+            "description": "Reboots the KLF200 gateway.",
+            "name": "Reboot gateway"
+        },
+        "set_cover_position": {
+            "description": "Move to specific position all or specified cover.",
+            "fields": {
+                "position": {
+                    "description": "Desired position of the cover.",
+                    "name": "Position"
+                },
+                "velocity": {
+                    "description": "Desired velocity percentage of the movement.",
+                    "name": "Velocity"
+                }
+            },
+            "name": "Set position"
+        }
+    },
     "title": "Velux KLF200 Gateway"
 }

@@ -1,17 +1,16 @@
 """Component to allow numeric input for platforms."""
-from pyvlx import PyVLX
-from pyvlx.opening_device import Blind, DualRollerShutter, OpeningDevice
-
 from homeassistant.components.number import (
     NumberExtraStoredData,
     NumberMode,
     RestoreNumber,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import PERCENTAGE
+from homeassistant.const import PERCENTAGE, EntityCategory
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import DeviceInfo, EntityCategory
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from pyvlx import PyVLX
+from pyvlx.opening_device import Blind, DualRollerShutter, OpeningDevice
 
 from .const import DOMAIN
 
@@ -22,9 +21,9 @@ async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
     """Set up cover(s) for Velux platform."""
-    entities = []
+    entities: list = []
     pyvlx: PyVLX = hass.data[DOMAIN][entry.entry_id]
-    entities.append(VeluxHeartbeatIntervall(pyvlx))
+    entities.append(VeluxHeartbeatInterval(pyvlx))
     for node in pyvlx.nodes:
         if isinstance(node, Blind):
             entities.append(VeluxOpenOrientation(node))
@@ -40,13 +39,13 @@ class VeluxOpenOrientation(RestoreNumber):
     def __init__(self, node: Blind) -> None:
         """Initialize the number."""
         self.node: Blind = node
-        self._attr_unit_of_measurement = PERCENTAGE
+        self._number_option_unit_of_measurement = PERCENTAGE
 
     @property
     def device_info(self) -> DeviceInfo:
         """Return specific device attributes."""
         return {
-            "identifiers": {(DOMAIN, self.node.node_id)},
+            "identifiers": {(DOMAIN, str(self.node.node_id))},
             "name": self.node.name,
         }
 
@@ -58,7 +57,7 @@ class VeluxOpenOrientation(RestoreNumber):
         """Restore number from last number data."""
         await super().async_internal_added_to_hass()
 
-        value: NumberExtraStoredData = await self.async_get_last_number_data()
+        value: NumberExtraStoredData | None = await self.async_get_last_number_data()
         if value is not None and value.native_value is not None:
             try:
                 self.set_native_value(value.native_value)
@@ -112,13 +111,13 @@ class VeluxCloseOrientation(RestoreNumber):
     def __init__(self, node: Blind) -> None:
         """Initialize the number."""
         self.node: Blind = node
-        self._attr_unit_of_measurement = PERCENTAGE
+        self._number_option_unit_of_measurement = PERCENTAGE
 
     @property
     def device_info(self) -> DeviceInfo:
         """Return specific device attributes."""
         return {
-            "identifiers": {(DOMAIN, self.node.node_id)},
+            "identifiers": {(DOMAIN, str(self.node.node_id))},
             "name": self.node.name,
         }
 
@@ -130,7 +129,7 @@ class VeluxCloseOrientation(RestoreNumber):
         """Restore number from last number data."""
         await super().async_internal_added_to_hass()
 
-        value: NumberExtraStoredData = await self.async_get_last_number_data()
+        value: NumberExtraStoredData | None = await self.async_get_last_number_data()
         if value is not None and value.native_value is not None:
             try:
                 self.set_native_value(value.native_value)
@@ -184,13 +183,13 @@ class VeluxDefaultVelocity(RestoreNumber):
     def __init__(self, node: OpeningDevice) -> None:
         """Initialize the number."""
         self.node: OpeningDevice = node
-        self._attr_unit_of_measurement = PERCENTAGE
+        self._number_option_unit_of_measurement = PERCENTAGE
 
     @property
     def device_info(self) -> DeviceInfo:
         """Return specific device attributes."""
         return {
-            "identifiers": {(DOMAIN, self.node.node_id)},
+            "identifiers": {(DOMAIN, str(self.node.node_id))},
             "name": self.node.name,
         }
 
@@ -198,13 +197,13 @@ class VeluxDefaultVelocity(RestoreNumber):
         """Update the current value."""
         self._attr_native_value = (
             self._attr_native_value
-        ) = self.node.default_velocity = int(value)
+        ) = self.node.default_velocity = int(value)  # type: ignore[assignment]
 
     async def async_added_to_hass(self) -> None:
         """Restore number from last number data."""
         await super().async_internal_added_to_hass()
 
-        value: NumberExtraStoredData = await self.async_get_last_number_data()
+        value: NumberExtraStoredData | None = await self.async_get_last_number_data()
         if value is not None and value.native_value is not None:
             try:
                 self.set_native_value(value.native_value)
@@ -247,8 +246,8 @@ class VeluxDefaultVelocity(RestoreNumber):
         return NumberMode.SLIDER
 
 
-class VeluxHeartbeatIntervall(RestoreNumber):
-    """Representation of a VeluxHeartbeatIntervall number."""
+class VeluxHeartbeatInterval(RestoreNumber):
+    """Representation of a VeluxHeartbeatInterval number."""
 
     def __init__(self, pyvlx: PyVLX) -> None:
         """Initialize the number entity."""
@@ -259,7 +258,7 @@ class VeluxHeartbeatIntervall(RestoreNumber):
         """Return specific device attributes."""
         return {
             "identifiers": {(DOMAIN, self.unique_id)},
-            "connections": {("Host", self.pyvlx.config.host)},
+            "connections": {("Host", self.pyvlx.config.host)},  # type: ignore[arg-type]
             "name": "KLF200 Gateway",
             "manufacturer": "Velux",
             "sw_version": self.pyvlx.version,
@@ -268,12 +267,12 @@ class VeluxHeartbeatIntervall(RestoreNumber):
     @property
     def name(self) -> str:
         """Return the name of the number."""
-        return "Heartbeat intervall (Default=30)"
+        return "Heartbeat interval (Default=30)"
 
     @property
     def unique_id(self) -> str:
         """Return the unique ID of the number."""
-        return "velux_heartbeat_intervall"
+        return "velux_heartbeat_interval"
 
     @property
     def entity_category(self) -> EntityCategory:
@@ -288,7 +287,7 @@ class VeluxHeartbeatIntervall(RestoreNumber):
         """Restore number from last number data."""
         await super().async_internal_added_to_hass()
 
-        value: NumberExtraStoredData = await self.async_get_last_number_data()
+        value: NumberExtraStoredData | None = await self.async_get_last_number_data()
         if value is not None and value.native_value is not None:
             try:
                 self.set_native_value(value.native_value)

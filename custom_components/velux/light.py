@@ -4,13 +4,12 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from pyvlx import Intensity, LighteningDevice, PyVLX
-from pyvlx.node import Node
-
 from homeassistant.components.light import ATTR_BRIGHTNESS, ColorMode, LightEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from pyvlx import Intensity, LighteningDevice, PyVLX
+from pyvlx.node import Node
 
 from .const import DOMAIN
 from .node_entity import VeluxNodeEntity

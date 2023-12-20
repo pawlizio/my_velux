@@ -1,12 +1,11 @@
 """Component to pressing a button as platforms."""
 
-from pyvlx import PyVLX
-
 from homeassistant.components.button import ButtonDeviceClass, ButtonEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo, EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from pyvlx import PyVLX
 
 from .const import DOMAIN
 

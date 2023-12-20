@@ -1,33 +1,41 @@
 """Support for VELUX KLF 200 devices."""
 import logging
 
-from pyvlx import PyVLX
-
-from homeassistant.config_entries import ConfigEntry
+import homeassistant.helpers.config_validation as cv
+import voluptuous as vol
+from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_PASSWORD
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.typing import ConfigType
+from pyvlx import PyVLX
 
-from .const import (
-    CONF_HEARTBEAT_INTERVAL,
-    CONF_HEARTBEAT_LOAD_ALL_STATES,
-    DOMAIN,
-    PLATFORMS,
-)
+from .const import DOMAIN, PLATFORMS
 
 _LOGGER = logging.getLogger(__name__)
+
+CONFIG_SCHEMA = vol.Schema(
+    vol.All(
+        cv.deprecated(DOMAIN),
+        {
+            DOMAIN: vol.Schema(
+                {
+                    vol.Required(CONF_HOST): cv.string,
+                    vol.Required(CONF_PASSWORD): cv.string,
+                }
+            )
+        },
+    ),
+    extra=vol.ALLOW_EXTRA,
+)
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up velux component via configuration.yaml."""
     if DOMAIN in config:
-        _LOGGER.warning(
-            "Please note that configuration of integrations which communicate to external devices should no longer use configuration.yaml setup. Your configuration data has been transferred to integration flow used on the GUI Integration page. You can safely remove your velux entry from configuration.yaml"
-        )
         hass.async_create_task(
             hass.config_entries.flow.async_init(
-                DOMAIN, context={"source": "import"}, data=config[DOMAIN]
+                DOMAIN, context={"source": SOURCE_IMPORT}, data=config[DOMAIN]
             )
         )
     return True
@@ -35,14 +43,11 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up velux component from config entry."""
+
     # Setup pyvlx module and connect to KLF200
     pyvlx_args = {
         "host": entry.data[CONF_HOST],
         "password": entry.data[CONF_PASSWORD],
-        "heartbeat_interval": entry.data.get(CONF_HEARTBEAT_INTERVAL, 30),
-        "heartbeat_load_all_states": entry.data.get(
-            CONF_HEARTBEAT_LOAD_ALL_STATES, True
-        ),
     }
     pyvlx: PyVLX = PyVLX(**pyvlx_args)
     try:
@@ -55,9 +60,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = pyvlx
 
-    # Setup velux components
+    # Load nodes (devices) and scenes from API
     await pyvlx.load_nodes()
     await pyvlx.load_scenes()
+
+    # Setup velux components
     for component in PLATFORMS:
         hass.async_create_task(
             hass.config_entries.async_forward_entry_setup(entry, component)
@@ -75,6 +82,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unloading the Velux platform."""
     pyvlx: PyVLX = hass.data[DOMAIN][entry.entry_id]
+
+    # Avoid reconnection problems due to unresponsive KLF200
+    await pyvlx.reboot_gateway()
+
     # Disconnect from KLF200
     await pyvlx.disconnect()
 

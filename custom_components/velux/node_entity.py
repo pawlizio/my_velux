@@ -1,10 +1,9 @@
 """Generic Velux Entity."""
-from typing import Optional
-
-from pyvlx import Node
 
 from homeassistant.core import callback
-from homeassistant.helpers.entity import DeviceInfo, Entity
+from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.entity import Entity
+from pyvlx import Node
 
 from .const import DOMAIN
 
@@ -14,9 +13,8 @@ class VeluxNodeEntity(Entity):
 
     _attr_should_poll = False
 
-    def __init__(self, node: Node, subtype: Optional[str] = None) -> None:
+    def __init__(self, node: Node) -> None:
         """Initialize the Velux device."""
-        self.subtype: str = subtype
         self.node: Node = node
 
     @callback
@@ -36,12 +34,9 @@ class VeluxNodeEntity(Entity):
     @property
     def unique_id(self) -> str:
         """Return the unique ID of this entity."""
-        # Unique IDs for double cover, subtyme is either upper or lower
-        if self.subtype is not None:
-            unique_id = str(self.node.node_id) + "_" + self.subtype
         # Some devices from other vendors does not provide a serial_number
         # Node_if is used instead, which is unique within velux component
-        elif self.node.serial_number is None:
+        if self.node.serial_number is None:
             unique_id = str(self.node.node_id)
         else:
             unique_id = self.node.serial_number
@@ -52,10 +47,6 @@ class VeluxNodeEntity(Entity):
         """Return the name of the entity."""
         if not self.node.name:
             return "#" + str(self.node.node_id)
-        # Name for double cover which is handled in one node within pylx,
-        # but represented by 3 covers in HA (upper, lower, combined)
-        if self.subtype is not None:
-            return self.node.name + "_" + self.subtype
         return self.node.name
 
     @property
@@ -67,6 +58,6 @@ class VeluxNodeEntity(Entity):
     def device_info(self) -> DeviceInfo:
         """Return specific device attributes."""
         return {
-            "identifiers": {(DOMAIN, self.node.node_id)},
+            "identifiers": {(DOMAIN, str(self.node.node_id))},
             "name": self.name,
         }

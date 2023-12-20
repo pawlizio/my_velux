@@ -2,15 +2,15 @@
 import logging
 from typing import Any
 
-from pyvlx import OnOffSwitch, OpeningDevice, PyVLX
-from pyvlx.opening_device import DualRollerShutter
-
 from homeassistant.components.switch import SwitchDeviceClass, SwitchEntity
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import DeviceInfo, EntityCategory
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
+from pyvlx import OnOffSwitch, OpeningDevice, PyVLX
+from pyvlx.opening_device import DualRollerShutter
 
 from .const import DOMAIN
 from .node_entity import VeluxNodeEntity
@@ -23,7 +23,7 @@ async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
     """Set up sensor(s) for Velux platform."""
-    entities = []
+    entities: list = []
     pyvlx: PyVLX = hass.data[DOMAIN][entry.entry_id]
     entities.append(VeluxHouseStatusMonitor(pyvlx))
     entities.append(VeluxHeartbeat(pyvlx))
@@ -87,7 +87,7 @@ class VeluxDefaultVelocityUsedSwitch(SwitchEntity, RestoreEntity):
     def device_info(self) -> DeviceInfo:
         """Return specific device attributes."""
         return {
-            "identifiers": {(DOMAIN, self.node.node_id)},
+            "identifiers": {(DOMAIN, str(self.node.node_id))},
             "name": self.node.name,
         }
 

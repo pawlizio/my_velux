@@ -1,12 +1,12 @@
 """Support for VELUX scenes."""
 from typing import Any
 
-from pyvlx import PyVLX, Scene as PyvlxScene
-
 from homeassistant.components.scene import Scene
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from pyvlx import PyVLX
+from pyvlx import Scene as PyvlxScene
 
 from . import _LOGGER
 from .const import DOMAIN
