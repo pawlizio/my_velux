@@ -1,79 +1,65 @@
 """Velux component config flow."""
 # https://developers.home-assistant.io/docs/config_entries_config_flow_handler#defining-your-config-flow
-import logging
+from typing import Any
 
-from pyvlx import PyVLX, PyVLXException
 import voluptuous as vol
-
-from homeassistant import config_entries
+from homeassistant.components.zeroconf import ZeroconfServiceInfo
+from homeassistant.config_entries import ConfigFlow
 from homeassistant.const import CONF_HOST, CONF_PASSWORD
+from homeassistant.data_entry_flow import FlowResult
+from pyvlx import PyVLX, PyVLXException
 
-from .const import CONF_HEARTBEAT_INTERVAL, CONF_HEARTBEAT_LOAD_ALL_STATES, DOMAIN
-
-_LOGGER = logging.getLogger(__name__)
+from .const import DOMAIN
 
 RESULT_AUTH_FAILED = "connection_failed"
 RESULT_SUCCESS = "success"
 
 
-class VeluxConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class VeluxConfigFlow(ConfigFlow, domain=DOMAIN):
     """Velux config flow."""
 
-    def __init__(self):
-        """Initialize."""
-        self._velux = None
-        self._host = None
-        self._password = None
-        self._hostname = None
-        self._heartbeat_interval = 30
-        self._heartbeat_load_all_states = True
-        self.bridge = None
+    VERSION = 1
 
-    def _get_entry(self):
-        return self.async_create_entry(
-            title=self._host,
-            data={CONF_HOST: self._host, CONF_PASSWORD: self._password, CONF_HEARTBEAT_INTERVAL: self._heartbeat_interval, CONF_HEARTBEAT_LOAD_ALL_STATES: self._heartbeat_load_all_states},
-        )
+    def __init__(self) -> None:
+        """Initialize the Velux flow."""
+        self._host: str | None = None
 
-    async def async_step_import(self, user_input=None):
+    async def async_step_import(self, data: dict[str, Any] | None = None) -> FlowResult:
         """Handle configuration by yaml file."""
-        return await self.async_step_user(user_input)
+        return await self.async_step_user(user_input=data)
 
-    async def async_step_user(self, user_input=None):
+    async def async_step_user(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
         """Handle configuration via user input."""
         errors = {}
         if user_input is not None:
-            self._host = user_input[CONF_HOST]
-            self._password = user_input[CONF_PASSWORD]
-            if CONF_HEARTBEAT_INTERVAL in user_input:
-                self._heartbeat_interval = user_input[CONF_HEARTBEAT_INTERVAL]
-            else:
-                self._heartbeat_interval = 30
-            if CONF_HEARTBEAT_LOAD_ALL_STATES in user_input:
-                self._heartbeat_load_all_states = user_input[CONF_HEARTBEAT_LOAD_ALL_STATES]
-            else:
-                self._heartbeat_load_all_states = True
-            await self.async_set_unique_id(self._host)
-            self._abort_if_unique_id_configured()
-            self.bridge = PyVLX(host=self._host, password=self._password)
+            self._async_abort_entries_match({CONF_HOST: user_input[CONF_HOST]})
+            pyvlx: PyVLX = PyVLX(
+                host=user_input[CONF_HOST],
+                password=user_input[CONF_PASSWORD],
+            )
             try:
-                await self.bridge.connect()
-                await self.bridge.disconnect()
-
-                return self._get_entry()
-            except PyVLXException:
-                errors["base"] = "invalid_auth"
+                await pyvlx.connect()
+                await pyvlx.disconnect()
+                return self.async_create_entry(
+                    title=user_input[CONF_HOST],
+                    data={
+                        CONF_HOST: user_input[CONF_HOST],
+                        CONF_PASSWORD: user_input[CONF_PASSWORD],
+                    },
+                )
+            except ConnectionAbortedError:
+                errors["base"] = "cannot_connect"
             except OSError:
                 errors["base"] = "invalid_host"
-            else:
-                errors["base"] = "cannot_connect"
+            except PyVLXException:
+                errors["base"] = "invalid_auth"
 
         data_schema = vol.Schema(
             {
                 vol.Required(CONF_HOST, default=self._host): str,
-                vol.Required(CONF_PASSWORD, default=self._password): str,
-                vol.Required(CONF_HEARTBEAT_INTERVAL, default=self._heartbeat_interval): int,
-                vol.Required(CONF_HEARTBEAT_LOAD_ALL_STATES, default=self._heartbeat_load_all_states): bool,
+                vol.Required(CONF_PASSWORD): str,
             }
         )
 
@@ -81,24 +67,17 @@ class VeluxConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="user", data_schema=data_schema, errors=errors
         )
 
-    async def async_step_unignore(self, user_input):
+    async def async_step_unignore(self, user_input: dict[str, Any]) -> FlowResult:
         """Rediscover a previously ignored discover."""
-        unique_id = user_input["unique_id"]
-        await self.async_set_unique_id(unique_id)
+        self._async_abort_entries_match({CONF_HOST: user_input[CONF_HOST]})
         return await self.async_step_user()
 
-    async def async_step_zeroconf(self, info):
+    async def async_step_zeroconf(
+        self, discovery_info: ZeroconfServiceInfo
+    ) -> FlowResult:
         """Handle discovery by zeroconf."""
-        if (
-            info is None
-            or not info.hostname
-            or not info.hostname.startswith("VELUX_KLF_LAN")
-        ):
+        if not discovery_info.name.startswith("VELUX_KLF_LAN"):
             return self.async_abort(reason="no_devices_found")
-
-        self._host = info.host
-
-        await self.async_set_unique_id(self._host)
-        self._abort_if_unique_id_configured()
-
+        self._async_abort_entries_match({CONF_HOST: discovery_info.host})
+        self._host = discovery_info.host
         return await self.async_step_user()

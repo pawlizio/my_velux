@@ -1,55 +1,57 @@
 """Support for Velux lights."""
 from __future__ import annotations
-import logging
 
-from pyvlx import Intensity, LighteningDevice
+import logging
+from typing import Any
+
+from homeassistant.components.light import ATTR_BRIGHTNESS, ColorMode, LightEntity
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from pyvlx import Intensity, LighteningDevice, PyVLX
 from pyvlx.node import Node
 
-from homeassistant.components.light import (
-    ATTR_BRIGHTNESS,
-    COLOR_MODE_BRIGHTNESS,
-    LightEntity,
-)
-
 from .const import DOMAIN
-from . import VeluxEntity
+from .node_entity import VeluxNodeEntity
 
 _LOGGER = logging.getLogger(__name__)
 PARALLEL_UPDATES = 1
 
 
-async def async_setup_entry(hass, entry, async_add_entities):
-    """Set up sensor(s) for Velux platform."""
+async def async_setup_entry(
+    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
+) -> None:
+    """Set up light(s) for Velux platform."""
     entities = []
-    gateway = hass.data[DOMAIN][entry.entry_id]
-    for node in gateway.nodes:
+    pyvlx: PyVLX = hass.data[DOMAIN][entry.entry_id]
+    for node in pyvlx.nodes:
         if isinstance(node, LighteningDevice):
             _LOGGER.debug("Light will be added: %s", node.name)
             entities.append(VeluxLight(node))
     async_add_entities(entities)
 
 
-class VeluxLight(VeluxEntity, LightEntity):
+class VeluxLight(VeluxNodeEntity, LightEntity):
     """Representation of a Velux light."""
 
     def __init__(self, node: Node) -> None:
         """Initialize the Velux light."""
         super().__init__(node)
 
-        self._attr_supported_color_modes = {COLOR_MODE_BRIGHTNESS}
-        self._attr_color_mode = COLOR_MODE_BRIGHTNESS
+    _attr_supported_color_modes = {ColorMode.BRIGHTNESS}
+    _attr_color_mode = ColorMode.BRIGHTNESS
 
     @property
-    def brightness(self):
+    def brightness(self) -> int:
         """Return the current brightness."""
         return int((100 - self.node.intensity.intensity_percent) * 255 / 100)
 
     @property
-    def is_on(self):
+    def is_on(self) -> bool:
         """Return true if light is on."""
         return not self.node.intensity.off and self.node.intensity.known
 
-    async def async_turn_on(self, **kwargs):
+    async def async_turn_on(self, **kwargs: Any) -> None:
         """Instruct the light to turn on."""
         if ATTR_BRIGHTNESS in kwargs:
             intensity_percent = int(100 - kwargs[ATTR_BRIGHTNESS] / 255 * 100)
@@ -60,6 +62,6 @@ class VeluxLight(VeluxEntity, LightEntity):
         else:
             await self.node.turn_on(wait_for_completion=True)
 
-    async def async_turn_off(self, **kwargs):
+    async def async_turn_off(self, **kwargs: Any) -> None:
         """Instruct the light to turn off."""
         await self.node.turn_off(wait_for_completion=True)

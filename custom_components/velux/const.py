@@ -1,10 +1,17 @@
 """Constants for Valux Integration."""
+from homeassistant.const import Platform
 
 ATTR_VELOCITY = "velocity"
-CONF_HEARTBEAT_INTERVAL = "heartbeat_interval"
-CONF_HEARTBEAT_LOAD_ALL_STATES = "heartbeat_load_all_states"
 DOMAIN = "velux"
-PLATFORMS = ["button", "cover", "light", "number", "scene", "sensor", "switch"]
+PLATFORMS = [
+    Platform.BUTTON,
+    Platform.COVER,
+    Platform.LIGHT,
+    Platform.NUMBER,
+    Platform.SCENE,
+    Platform.SENSOR,
+    Platform.SWITCH,
+]
 UPPER_COVER = "upper"
 LOWER_COVER = "lower"
 DUAL_COVER = "dual"
