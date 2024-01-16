@@ -17,7 +17,7 @@ async def async_setup_entry(
     entities = []
     pyvlx: PyVLX = hass.data[DOMAIN][entry.entry_id]
     entities.append(VeluxConnectionCounter(pyvlx))
-    entities.append(VeluxConnectionState(gateway))
+    entities.append(VeluxConnectionState(pyvlx))
     async_add_entities(entities)
 
 
