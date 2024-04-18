@@ -160,6 +160,11 @@ class VeluxCover(VeluxNodeEntity, CoverEntity):
         """Return if the cover is opening or not."""
         return self.node.is_closing
 
+    @property
+    def available(self) -> bool:
+        """Return entity availability."""
+        return self.node.is_available
+
     @callback
     def async_register_callbacks(self) -> None:
         """Register callbacks to update hass after device was changed."""
@@ -174,6 +179,8 @@ class VeluxCover(VeluxNodeEntity, CoverEntity):
                         await asyncio.sleep(1)
                         self.async_write_ha_state()
                     self.is_looping_while_moving = False
+                    self.node.unregister_device_updated_cb(after_update_callback)
+
 
         self.node.register_device_updated_cb(after_update_callback)
 
