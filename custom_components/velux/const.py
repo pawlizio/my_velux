@@ -1,4 +1,6 @@
 """Constants for Valux Integration."""
+from logging import getLogger
+
 from homeassistant.const import Platform
 
 ATTR_VELOCITY = "velocity"
@@ -15,3 +17,4 @@ PLATFORMS = [
 UPPER_COVER = "upper"
 LOWER_COVER = "lower"
 DUAL_COVER = "dual"
+LOGGER = getLogger(__package__)

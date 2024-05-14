@@ -12,10 +12,9 @@ from homeassistant.helpers.restore_state import RestoreEntity
 from pyvlx import OnOffSwitch, OpeningDevice, PyVLX
 from pyvlx.opening_device import DualRollerShutter
 
-from .const import DOMAIN
+from .const import DOMAIN, LOGGER
 from .node_entity import VeluxNodeEntity
 
-_LOGGER = logging.getLogger(__name__)
 PARALLEL_UPDATES = 1
 
 
@@ -30,7 +29,7 @@ async def async_setup_entry(
     entities.append(VeluxHeartbeatLoadAllStates(pyvlx))
     for node in pyvlx.nodes:
         if isinstance(node, OnOffSwitch):
-            _LOGGER.debug("Switch will be added: %s", node.name)
+            LOGGER.debug("Switch will be added: %s", node.name)
             entities.append(VeluxSwitch(node))
         if isinstance(node, OpeningDevice) and not isinstance(node, DualRollerShutter):
             entities.append(VeluxDefaultVelocityUsedSwitch(node))
@@ -76,7 +75,7 @@ class VeluxDefaultVelocityUsedSwitch(SwitchEntity, RestoreEntity):
         await super().async_added_to_hass()
         s = await self.async_get_last_state()
 
-        _LOGGER.info(f"restored numeric value for {self.name}: {str(s)}")  # noqa: G004
+        LOGGER.info(f"restored numeric value for {self.name}: {str(s)}")  # noqa: G004
 
         if s is not None and s.state is not None and s.state == "on":
             self.turn_on()

@@ -1,5 +1,5 @@
 """Support for VELUX sensors."""
-from homeassistant.components.binary_sensor import BinarySensorEntity
+from homeassistant.components.binary_sensor import BinarySensorEntity, BinarySensorDeviceClass
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -58,24 +58,19 @@ class VeluxConnectionCounter(SensorEntity):
 class VeluxConnectionState(BinarySensorEntity):
     """Representation of a Velux state."""
 
-    def __init__(self, gateway):
+    def __init__(self, pyvlx):
         """Initialize the cover."""
-        self.pyvlx = gateway
-        self._attr_is_on = False
-        self.pyvlx.connection.register_connection_opened_cb(self.turn_on)
-        self.pyvlx.connection.register_connection_closed_cb(self.turn_off)
+        self.pyvlx = pyvlx
 
-    async def turn_on(self):
-        """Turn the sensor on."""
-        if not self._attr_is_on:
-            self._attr_is_on = True
-            self.async_write_ha_state()
+    @property
+    def is_on(self):
+        """Return the device state of the entity"""
+        return self.pyvlx.connection.connected
 
-    async def turn_off(self):
-        """Turn the sensor off."""
-        if self._attr_is_on:
-            self._attr_is_on = False
-            self.async_write_ha_state()
+    @property
+    def device_class(self):
+        """Return the device state of the entity"""
+        return BinarySensorDeviceClass.CONNECTIVITY
 
     @property
     def name(self):
@@ -84,6 +79,7 @@ class VeluxConnectionState(BinarySensorEntity):
 
     @property
     def device_info(self):
+        """Device info of the binary sensor."""
         return {
             "identifiers": {
                 (DOMAIN, self.unique_id)
@@ -100,3 +96,13 @@ class VeluxConnectionState(BinarySensorEntity):
     def unique_id(self):
         """Return the unique ID of this cover."""
         return "KLF200ConnectionState"
+
+    async def async_added_to_hass(self) -> None:
+        """Register callbacks to update hass after device was changed."""
+        self.pyvlx.connection.register_connection_opened_cb(self.async_write_ha_state)
+        self.pyvlx.connection.register_connection_closed_cb(self.async_write_ha_state)
+
+    async def async_will_remove_from_hass(self) -> None:
+        """Unregister callbacks to update hass after device was changed."""
+        self.pyvlx.connection.unregister_connection_opened_cb(self.async_write_ha_state)
+        self.pyvlx.connection.unregister_connection_closed_cb(self.async_write_ha_state)

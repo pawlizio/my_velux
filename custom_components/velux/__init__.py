@@ -10,9 +10,7 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.typing import ConfigType
 from pyvlx import PyVLX
 
-from .const import DOMAIN, PLATFORMS
-
-_LOGGER = logging.getLogger(__name__)
+from .const import DOMAIN, LOGGER, PLATFORMS
 
 CONFIG_SCHEMA = vol.Schema(
     vol.All(
@@ -31,13 +29,18 @@ CONFIG_SCHEMA = vol.Schema(
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
-    """Set up velux component via configuration.yaml."""
-    if DOMAIN in config:
-        hass.async_create_task(
-            hass.config_entries.flow.async_init(
-                DOMAIN, context={"source": SOURCE_IMPORT}, data=config[DOMAIN]
-            )
+    """Set up the velux component."""
+    if DOMAIN not in config:
+        return True
+
+    hass.async_create_task(
+        hass.config_entries.flow.async_init(
+            DOMAIN,
+            context={"source": SOURCE_IMPORT},
+            data=config[DOMAIN],
         )
+    )
+
     return True
 
 
@@ -53,7 +56,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     try:
         await pyvlx.connect()
     except OSError as ex:
-        _LOGGER.warning("Unable to connect to KLF200: %s", str(ex))
+        LOGGER.warning("Unable to connect to KLF200: %s", str(ex))
         raise ConfigEntryNotReady from ex
 
     # Store pyvlx in hass data
