@@ -2,9 +2,10 @@
 from homeassistant.components.binary_sensor import BinarySensorEntity, BinarySensorDeviceClass
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import callback, HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+
 from pyvlx import PyVLX
 
 from .const import DOMAIN
@@ -97,12 +98,17 @@ class VeluxConnectionState(BinarySensorEntity):
         """Return the unique ID of this cover."""
         return "KLF200ConnectionState"
 
+    @callback
+    async def after_update_callback(self):
+        """Call after device was updated."""
+        self.async_write_ha_state()
+
     async def async_added_to_hass(self) -> None:
         """Register callbacks to update hass after device was changed."""
-        self.pyvlx.connection.register_connection_opened_cb(self.async_write_ha_state)
-        self.pyvlx.connection.register_connection_closed_cb(self.async_write_ha_state)
+        self.pyvlx.connection.register_connection_opened_cb(self.after_update_callback)
+        self.pyvlx.connection.register_connection_closed_cb(self.after_update_callback)
 
     async def async_will_remove_from_hass(self) -> None:
         """Unregister callbacks to update hass after device was changed."""
-        self.pyvlx.connection.unregister_connection_opened_cb(self.async_write_ha_state)
-        self.pyvlx.connection.unregister_connection_closed_cb(self.async_write_ha_state)
+        self.pyvlx.connection.unregister_connection_opened_cb(self.after_update_callback)
+        self.pyvlx.connection.unregister_connection_closed_cb(self.after_update_callback)
