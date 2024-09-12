@@ -7,7 +7,7 @@
   "iot_class": "local_push",
   "issue_tracker": "https://github.com/pawlizio/my_velux/issues",
   "loggers": ["pyvlx"],
-  "requirements": ["git+https://github.com/pawlizio/pyvlx.git@fire-forgot-issue#pyvlx==0.3.23"],
+  "requirements": ["git+https://github.com/Julius2342/pyvlx.git@master#pyvlx==0.2.24"],
   "zeroconf": [
     {"type":"_http._tcp.local.","name":"velux_klf_lan*"}
     ],
