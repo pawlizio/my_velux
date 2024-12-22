@@ -39,11 +39,11 @@ class VeluxGatewayRestart(ButtonEntity):
     def device_info(self) -> DeviceInfo:
         """Return specific device attributes."""
         return {
-            "identifiers": {(DOMAIN, self.unique_id)},
+            "identifiers": {(DOMAIN, self.entry.unique_id)},
             "connections": {("Host", self.pyvlx.config.host)},
-            "name": "KLF200 Gateway",
+            "name": f"{self.entry.unique_id}",
             "manufacturer": "Velux",
-            "sw_version": self.pyvlx.version,
+            "sw_version": self.pyvlx.klf200.version
         }
 
     @property

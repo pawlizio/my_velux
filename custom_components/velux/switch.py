@@ -139,13 +139,13 @@ class VeluxHouseStatusMonitor(SwitchEntity):
 
     @property
     def device_info(self) -> DeviceInfo:
-        """Return device attributes of the switch."""
+        """Return specific device attributes."""
         return {
-            "identifiers": {(DOMAIN, self.unique_id)},
+            "identifiers": {(DOMAIN, self.entry.unique_id)},
             "connections": {("Host", self.pyvlx.config.host)},
-            "name": "KLF200 Gateway",
+            "name": f"{self.entry.unique_id}",
             "manufacturer": "Velux",
-            "sw_version": self.pyvlx.version,
+            "sw_version": self.pyvlx.klf200.version
         }
 
     @property
@@ -192,13 +192,13 @@ class VeluxHeartbeat(SwitchEntity):
 
     @property
     def device_info(self) -> DeviceInfo:
-        """Return device attributes of the switch."""
+        """Return specific device attributes."""
         return {
-            "identifiers": {(DOMAIN, self.unique_id)},
+            "identifiers": {(DOMAIN, self.entry.unique_id)},
             "connections": {("Host", self.pyvlx.config.host)},
-            "name": "KLF200 Gateway",
+            "name": f"{self.entry.unique_id}",
             "manufacturer": "Velux",
-            "sw_version": self.pyvlx.version,
+            "sw_version": self.pyvlx.klf200.version
         }
 
     @property
@@ -245,13 +245,13 @@ class VeluxHeartbeatLoadAllStates(SwitchEntity):
 
     @property
     def device_info(self) -> DeviceInfo:
-        """Return device attributes of the switch."""
+        """Return specific device attributes."""
         return {
-            "identifiers": {(DOMAIN, self.unique_id)},
+            "identifiers": {(DOMAIN, self.entry.unique_id)},
             "connections": {("Host", self.pyvlx.config.host)},
-            "name": "KLF200 Gateway",
+            "name": f"{self.entry.unique_id}",
             "manufacturer": "Velux",
-            "sw_version": self.pyvlx.version,
+            "sw_version": self.pyvlx.klf200.version
         }
 
     @property
