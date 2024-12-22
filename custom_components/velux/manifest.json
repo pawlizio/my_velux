@@ -12,6 +12,6 @@
     {"type":"_http._tcp.local.","name":"velux_klf_lan*"}
     ],
   "config_flow": true,
-  "version": "2.9.14"
+  "version": "2.9.12"
 }
 
