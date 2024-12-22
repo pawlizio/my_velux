@@ -33,7 +33,7 @@ class VeluxGatewayRestart(ButtonEntity):
     @property
     def name(self) -> str:
         """Name of the button entity."""
-        return f"{self.entry.unique_id} Reboot"
+        return "Reboot"
 
     @property
     def device_info(self) -> DeviceInfo:

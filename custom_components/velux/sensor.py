@@ -33,7 +33,7 @@ class VeluxConnectionCounter(SensorEntity):
     @property
     def name(self) -> str:
         """Name of the entity."""
-        return f"{self.entry.unique_id} Connection Counter"
+        return "Connection Counter"
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -78,7 +78,7 @@ class VeluxConnectionState(BinarySensorEntity):
     @property
     def name(self):
         """Name of the entity."""
-        return f"{self.entry.unique_id} Connection State"
+        return "Connection State"
 
     @property
     def device_info(self):

@@ -135,7 +135,7 @@ class VeluxHouseStatusMonitor(SwitchEntity):
     @property
     def name(self) -> str:
         """Return name of the switch."""
-        return f"{self.entry.unique_id} House Status Monitor"
+        return "House Status Monitor"
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -188,7 +188,7 @@ class VeluxHeartbeat(SwitchEntity):
     @property
     def name(self) -> str:
         """Name of the entity."""
-        return f"{self.entry.unique_id} Heartbeat"
+        return "Heartbeat"
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -241,7 +241,7 @@ class VeluxHeartbeatLoadAllStates(SwitchEntity):
     @property
     def name(self) -> str:
         """Name of the entity."""
-        return f"{self.entry.unique_id} Load all states on Heartbeat"
+        return "Load all states on Heartbeat"
 
     @property
     def device_info(self) -> DeviceInfo:
