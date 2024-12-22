@@ -75,7 +75,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     async def async_reboot_gateway(service_call):
         await pyvlx.reboot_gateway()
 
-    hass.services.async_register(DOMAIN, "reboot_gateway", async_reboot_gateway)
+    hass.services.async_register(DOMAIN, f"{entry.unique_id}_reboot", async_reboot_gateway)
 
     return True
 
