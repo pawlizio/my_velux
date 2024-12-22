@@ -22,6 +22,6 @@ In order to avoid connection problems after updates or reboots of Home Assistant
         event: shutdown
     condition: []
     action:
-      - service: velux.reboot_gateway
+      - service: velux.velux_klf_lan_XXXX_reboot    # while XXXX is unique for every KLF200. 
         data: {}
     mode: single
