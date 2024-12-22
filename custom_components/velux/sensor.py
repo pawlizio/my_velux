@@ -17,22 +17,23 @@ async def async_setup_entry(
     """Set up sensor(s) for Velux platform."""
     entities = []
     pyvlx: PyVLX = hass.data[DOMAIN][entry.entry_id]
-    entities.append(VeluxConnectionCounter(pyvlx))
-    entities.append(VeluxConnectionState(pyvlx))
+    entities.append(VeluxConnectionCounter(pyvlx, entry))
+    entities.append(VeluxConnectionState(pyvlx, entry))
     async_add_entities(entities)
 
 
 class VeluxConnectionCounter(SensorEntity):
     """Representation of a Velux number."""
 
-    def __init__(self, pyvlx: PyVLX) -> None:
+    def __init__(self, pyvlx: PyVLX, entry: ConfigEntry) -> None:
         """Initialize the cover."""
         self.pyvlx: PyVLX = pyvlx
+        self.entry: ConfigEntry = entry
 
     @property
     def name(self) -> str:
         """Name of the entity."""
-        return "KLF200 Connection Counter"
+        return f"{self.entry.unique_id} Connection Counter"
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -48,7 +49,7 @@ class VeluxConnectionCounter(SensorEntity):
     @property
     def unique_id(self) -> str:
         """Return the unique ID of this cover."""
-        return "KLF200ConnectionCounter"
+        return f"{self.entry.unique_id}_connection_counter"
 
     @property
     def native_value(self) -> int:
@@ -59,9 +60,10 @@ class VeluxConnectionCounter(SensorEntity):
 class VeluxConnectionState(BinarySensorEntity):
     """Representation of a Velux state."""
 
-    def __init__(self, pyvlx):
+    def __init__(self, pyvlx: PyVLX, entry: ConfigEntry):
         """Initialize the cover."""
-        self.pyvlx = pyvlx
+        self.pyvlx: PyVLX = pyvlx
+        self.entry: ConfigEntry = entry
 
     @property
     def is_on(self):
@@ -76,7 +78,7 @@ class VeluxConnectionState(BinarySensorEntity):
     @property
     def name(self):
         """Name of the entity."""
-        return "KLF200 Connection State"
+        return f"{self.entry.unique_id} Connection State"
 
     @property
     def device_info(self):
@@ -96,7 +98,7 @@ class VeluxConnectionState(BinarySensorEntity):
     @property
     def unique_id(self):
         """Return the unique ID of this cover."""
-        return "KLF200ConnectionState"
+        return f"{self.entry.unique_id}_connection_state"
 
     @callback
     async def after_update_callback(self):

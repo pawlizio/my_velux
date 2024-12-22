@@ -24,9 +24,9 @@ async def async_setup_entry(
     """Set up sensor(s) for Velux platform."""
     entities: list = []
     pyvlx: PyVLX = hass.data[DOMAIN][entry.entry_id]
-    entities.append(VeluxHouseStatusMonitor(pyvlx))
-    entities.append(VeluxHeartbeat(pyvlx))
-    entities.append(VeluxHeartbeatLoadAllStates(pyvlx))
+    entities.append(VeluxHouseStatusMonitor(pyvlx, entry))
+    entities.append(VeluxHeartbeat(pyvlx, entry))
+    entities.append(VeluxHeartbeatLoadAllStates(pyvlx, entry))
     for node in pyvlx.nodes:
         if isinstance(node, OnOffSwitch):
             LOGGER.debug("Switch will be added: %s", node.name)
@@ -127,14 +127,15 @@ class VeluxDefaultVelocityUsedSwitch(SwitchEntity, RestoreEntity):
 class VeluxHouseStatusMonitor(SwitchEntity):
     """Representation of a Velux HouseStatusMonitor switch."""
 
-    def __init__(self, pyvlx: PyVLX) -> None:
+    def __init__(self, pyvlx: PyVLX, entry: ConfigEntry) -> None:
         """Initialize the switch."""
         self.pyvlx: PyVLX = pyvlx
+        self.entry: ConfigEntry = entry
 
     @property
     def name(self) -> str:
         """Return name of the switch."""
-        return "KLF200 House Status Monitor"
+        return f"{self.entry.unique_id} House Status Monitor"
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -160,7 +161,7 @@ class VeluxHouseStatusMonitor(SwitchEntity):
     @property
     def unique_id(self) -> str:
         """Return unique ID of this switch."""
-        return "KLF200_House_Status_Monitor"
+        return f"{self.entry.unique_id}_House_Status_Monitor"
 
     @property
     def is_on(self) -> bool:
@@ -179,14 +180,15 @@ class VeluxHouseStatusMonitor(SwitchEntity):
 class VeluxHeartbeat(SwitchEntity):
     """Representation of a Velux Heartbeat switch."""
 
-    def __init__(self, pyvlx: PyVLX) -> None:
+    def __init__(self, pyvlx: PyVLX, entry: ConfigEntry) -> None:
         """Initialize the cover."""
         self.pyvlx: PyVLX = pyvlx
+        self.entry: ConfigEntry = entry
 
     @property
     def name(self) -> str:
         """Name of the entity."""
-        return "PyVLX Heartbeat"
+        return f"{self.entry.unique_id} Heartbeat"
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -212,7 +214,7 @@ class VeluxHeartbeat(SwitchEntity):
     @property
     def unique_id(self) -> str:
         """Return unique ID of the switch."""
-        return "PyVLX_Heartbeat"
+        return f"{self.entry.unique_id}_heartbeat"
 
     @property
     def is_on(self) -> bool:
@@ -231,14 +233,15 @@ class VeluxHeartbeat(SwitchEntity):
 class VeluxHeartbeatLoadAllStates(SwitchEntity):
     """Representation of a VeluxHeartbeatLoadAllStates switch."""
 
-    def __init__(self, pyvlx: PyVLX) -> None:
+    def __init__(self, pyvlx: PyVLX, entry: ConfigEntry) -> None:
         """Initialize the number entity."""
         self.pyvlx = pyvlx
+        self.entry: ConfigEntry = entry
 
     @property
     def name(self) -> str:
         """Name of the entity."""
-        return "Load all states on Heartbeat"
+        return f"{self.entry.unique_id} Load all states on Heartbeat"
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -264,7 +267,7 @@ class VeluxHeartbeatLoadAllStates(SwitchEntity):
     @property
     def unique_id(self) -> str:
         """Return unique ID of the switch."""
-        return "Heartbeat_load_all_states"
+        return f"{self.entry.unique_id}_heartbeat_load_all_states"
 
     @property
     def is_on(self) -> bool:
