@@ -13,4 +13,4 @@ For troubleshooting enable logger for pyvlx at your configuration.yaml as follow
         pyvlx: debug
         custom_components.velux: debug
 
-In order to avoid connection problems after updates or reboots of Home Assistant, the KLF200 will be automatically rebooted on hass stop even.
+In order to avoid connection problems after updates or reboots of Home Assistant, the KLF200 will be rebooted automatically on hass stop even.
