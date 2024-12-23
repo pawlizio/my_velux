@@ -3,7 +3,7 @@ from homeassistant.components.binary_sensor import BinarySensorEntity, BinarySen
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import callback, HomeAssistant
-from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.entity import DeviceInfo, EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from pyvlx import PyVLX
@@ -28,33 +28,12 @@ class VeluxConnectionCounter(SensorEntity):
     def __init__(self, pyvlx: PyVLX, entry: ConfigEntry) -> None:
         """Initialize the cover."""
         self.pyvlx: PyVLX = pyvlx
-        self.entry: ConfigEntry = entry
-
-    @property
-    def name(self) -> str:
-        """Name of the entity."""
-        return "Connection Counter"
-
-    @property
-    def device_info(self) -> DeviceInfo:
-        """Return specific device attributes."""
-        return {
-            "identifiers": {(DOMAIN, self.entry.unique_id)},
-            "connections": {("Host", self.pyvlx.config.host)},
-            "name": f"{self.entry.unique_id}",
-            "manufacturer": "Velux",
-            "sw_version": self.pyvlx.klf200.version
-        }
-
-    @property
-    def unique_id(self) -> str:
-        """Return the unique ID of this cover."""
-        return f"{self.entry.unique_id}_connection_counter"
-
-    @property
-    def native_value(self) -> int:
-        """Return the value reported by the sensor."""
-        return self.pyvlx.connection.connection_counter
+        self._attr_unique_id = f"{entry.unique_id}_connection_counter"
+        self._attr_name = "Connection Counter"
+        self._attr_native_value = self.pyvlx.connection.connection_counter
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, entry.unique_id)},
+        )
 
 
 class VeluxConnectionState(BinarySensorEntity):
@@ -63,38 +42,13 @@ class VeluxConnectionState(BinarySensorEntity):
     def __init__(self, pyvlx: PyVLX, entry: ConfigEntry):
         """Initialize the cover."""
         self.pyvlx: PyVLX = pyvlx
-        self.entry: ConfigEntry = entry
-
-    @property
-    def is_on(self):
-        """Return the device state of the entity"""
-        return self.pyvlx.connection.connected
-
-    @property
-    def device_class(self):
-        """Return the device state of the entity"""
-        return BinarySensorDeviceClass.CONNECTIVITY
-
-    @property
-    def name(self):
-        """Name of the entity."""
-        return "Connection State"
-
-    @property
-    def device_info(self) -> DeviceInfo:
-        """Return specific device attributes."""
-        return {
-            "identifiers": {(DOMAIN, self.entry.unique_id)},
-            "connections": {("Host", self.pyvlx.config.host)},
-            "name": f"{self.entry.unique_id}",
-            "manufacturer": "Velux",
-            "sw_version": self.pyvlx.klf200.version
-        }
-
-    @property
-    def unique_id(self):
-        """Return the unique ID of this cover."""
-        return f"{self.entry.unique_id}_connection_state"
+        self._attr_unique_id = f"{entry.unique_id}_connection_state"
+        self._attr_device_class = BinarySensorDeviceClass.CONNECTIVITY
+        self._attr_name = "Connection State"
+        self._attr_is_on = self.pyvlx.connection.connected
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, entry.unique_id)},
+        )
 
     @callback
     async def after_update_callback(self):
