@@ -28,38 +28,13 @@ class VeluxGatewayRestart(ButtonEntity):
     def __init__(self, pyvlx: PyVLX, entry: ConfigEntry) -> None:
         """Initialize the button entity."""
         self.pyvlx: PyVLX = pyvlx
-        self.entry: ConfigEntry = entry
-
-    @property
-    def name(self) -> str:
-        """Name of the button entity."""
-        return "Reboot"
-
-    @property
-    def device_info(self) -> DeviceInfo:
-        """Return specific device attributes."""
-        return {
-            "identifiers": {(DOMAIN, self.entry.unique_id)},
-            "connections": {("Host", self.pyvlx.config.host)},
-            "name": f"{self.entry.unique_id}",
-            "manufacturer": "Velux",
-            "sw_version": self.pyvlx.klf200.version
-        }
-
-    @property
-    def unique_id(self) -> str:
-        """Return the unique ID."""
-        return f"{self.entry.unique_id}_reboot"
-
-    @property
-    def entity_category(self) -> EntityCategory:
-        """Return the entity category."""
-        return EntityCategory.CONFIG
-
-    @property
-    def device_class(self) -> ButtonDeviceClass:
-        """Return the device class."""
-        return ButtonDeviceClass.RESTART
+        self._attr_unique_id = f"reboot_{entry.unique_id}"
+        self._attr_entity_category = EntityCategory.CONFIG
+        self._attr_device_class = ButtonDeviceClass.RESTART
+        self._attr_name = f"Reboot {entry.unique_id}"
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, entry.unique_id)},
+        )
 
     async def async_press(self) -> None:
         """Handle the button press."""

@@ -4,9 +4,10 @@ import logging
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
-from homeassistant.const import CONF_HOST, CONF_PASSWORD
+from homeassistant.const import CONF_HOST, CONF_PASSWORD, EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.helpers.typing import ConfigType
 from pyvlx import PyVLX
@@ -64,6 +65,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = pyvlx
 
+    # Add bridge device to device registry
+    device_registry = dr.async_get(hass)
+
+    device_registry.async_get_or_create(
+        config_entry_id=entry.entry_id,
+        identifiers={(DOMAIN, entry.unique_id)},
+        manufacturer="Velux",
+        name="io-homecontrol Interface",
+        model="KLF200",
+        hw_version=pyvlx.klf200.version.hardwareversion,
+        sw_version=pyvlx.klf200.version.softwareversion,
+    )
+
     # Load nodes (devices) and scenes from API
     await pyvlx.load_nodes()
     await pyvlx.load_scenes()
@@ -71,14 +85,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Setup velux components
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
-    # Register velux services
-    async def async_reboot_gateway(service_call):
+    async def on_hass_stop(event):
+        """Close connection when hass stops."""
+        LOGGER.debug("Velux interface terminated")
         await pyvlx.reboot_gateway()
+        await pyvlx.disconnect()
 
-    hass.services.async_register(DOMAIN, f"{entry.unique_id}_reboot", async_reboot_gateway)
+    hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, on_hass_stop)
 
     return True
-
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unloading the Velux platform."""

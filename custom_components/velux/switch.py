@@ -42,16 +42,8 @@ class VeluxSwitch(VeluxNodeEntity, SwitchEntity):
     def __init__(self, node: OnOffSwitch) -> None:
         """Initialize the switch."""
         super().__init__(node)
-
-    @property
-    def device_class(self) -> SwitchDeviceClass:
-        """Return the device class of this node."""
-        return SwitchDeviceClass.SWITCH
-
-    @property
-    def is_on(self) -> bool:
-        """Return true if switch in on."""
-        return self.node.is_on()
+        self._attr_device_class = SwitchDeviceClass.SWITCH
+        self._attr_is_on = self.node.is_on()
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the switch on."""
@@ -69,6 +61,11 @@ class VeluxDefaultVelocityUsedSwitch(SwitchEntity, RestoreEntity):
         """Initialize the cover."""
         self.node: OpeningDevice = node
         super().__init__()
+        self._attr_unique_id = f"{str(self.node.node_id)}_use_default_velocity"
+        self._attr_entity_category = EntityCategory.CONFIG
+        self._attr_device_class = SwitchDeviceClass.SWITCH
+        self._attr_name = self.node.name + " Use Default Velocity"
+        self._attr_is_on = self.node.use_default_velocity
 
     async def async_added_to_hass(self) -> None:
         """Restore state from last state."""
@@ -90,31 +87,6 @@ class VeluxDefaultVelocityUsedSwitch(SwitchEntity, RestoreEntity):
             "name": self.node.name,
         }
 
-    @property
-    def name(self) -> str:
-        """Return the name of the Velux device."""
-        return self.node.name + " Use Default Velocity"
-
-    @property
-    def unique_id(self) -> str:
-        """Return the unique ID of this cover."""
-        return str(self.node.node_id) + "_use_default_velocity"
-
-    @property
-    def entity_category(self) -> EntityCategory:
-        """Return the entity category of this number."""
-        return EntityCategory.CONFIG
-
-    @property
-    def device_class(self) -> SwitchDeviceClass:
-        """Return the device class of this node."""
-        return SwitchDeviceClass.SWITCH
-
-    @property
-    def is_on(self) -> bool:
-        """Return true if the switch is on."""
-        return self.node.use_default_velocity
-
     def turn_on(self, **kwargs: Any) -> None:
         """Turn the entity on."""
         self.node.use_default_velocity = True
@@ -130,43 +102,14 @@ class VeluxHouseStatusMonitor(SwitchEntity):
     def __init__(self, pyvlx: PyVLX, entry: ConfigEntry) -> None:
         """Initialize the switch."""
         self.pyvlx: PyVLX = pyvlx
-        self.entry: ConfigEntry = entry
-
-    @property
-    def name(self) -> str:
-        """Return name of the switch."""
-        return "House Status Monitor"
-
-    @property
-    def device_info(self) -> DeviceInfo:
-        """Return specific device attributes."""
-        return {
-            "identifiers": {(DOMAIN, self.entry.unique_id)},
-            "connections": {("Host", self.pyvlx.config.host)},
-            "name": f"{self.entry.unique_id}",
-            "manufacturer": "Velux",
-            "sw_version": self.pyvlx.klf200.version
-        }
-
-    @property
-    def entity_category(self) -> EntityCategory:
-        """Return entity category of this switch."""
-        return EntityCategory.CONFIG
-
-    @property
-    def device_class(self) -> SwitchDeviceClass:
-        """Return device class of this switch."""
-        return SwitchDeviceClass.SWITCH
-
-    @property
-    def unique_id(self) -> str:
-        """Return unique ID of this switch."""
-        return f"{self.entry.unique_id}_House_Status_Monitor"
-
-    @property
-    def is_on(self) -> bool:
-        """Return true if switch is on."""
-        return self.pyvlx.klf200.house_status_monitor_enabled
+        self._attr_unique_id = f"{entry.unique_id}_House_Status_Monitor"
+        self._attr_entity_category = EntityCategory.CONFIG
+        self._attr_device_class = SwitchDeviceClass.SWITCH
+        self._attr_name = "House Status Monitor"
+        self._attr_is_on = self.pyvlx.klf200.house_status_monitor_enabled
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, entry.unique_id)},
+        )
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the switch on."""
@@ -183,43 +126,14 @@ class VeluxHeartbeat(SwitchEntity):
     def __init__(self, pyvlx: PyVLX, entry: ConfigEntry) -> None:
         """Initialize the cover."""
         self.pyvlx: PyVLX = pyvlx
-        self.entry: ConfigEntry = entry
-
-    @property
-    def name(self) -> str:
-        """Name of the entity."""
-        return "Heartbeat"
-
-    @property
-    def device_info(self) -> DeviceInfo:
-        """Return specific device attributes."""
-        return {
-            "identifiers": {(DOMAIN, self.entry.unique_id)},
-            "connections": {("Host", self.pyvlx.config.host)},
-            "name": f"{self.entry.unique_id}",
-            "manufacturer": "Velux",
-            "sw_version": self.pyvlx.klf200.version
-        }
-
-    @property
-    def entity_category(self) -> EntityCategory:
-        """Return the entity category of the switch."""
-        return EntityCategory.CONFIG
-
-    @property
-    def device_class(self) -> SwitchDeviceClass:
-        """Return device class of the switch."""
-        return SwitchDeviceClass.SWITCH
-
-    @property
-    def unique_id(self) -> str:
-        """Return unique ID of the switch."""
-        return f"{self.entry.unique_id}_heartbeat"
-
-    @property
-    def is_on(self) -> bool:
-        """Return true if the switch is on."""
-        return not self.pyvlx.heartbeat.stopped
+        self._attr_unique_id = f"{entry.unique_id}_heartbeat"
+        self._attr_entity_category = EntityCategory.CONFIG
+        self._attr_device_class = SwitchDeviceClass.SWITCH
+        self._attr_name = "Heartbeat"
+        self._attr_is_on = not self.pyvlx.heartbeat.stopped
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, entry.unique_id)},
+        )
 
     def turn_on(self, **kwargs: Any) -> None:
         """Turn the switch on."""
@@ -236,43 +150,14 @@ class VeluxHeartbeatLoadAllStates(SwitchEntity):
     def __init__(self, pyvlx: PyVLX, entry: ConfigEntry) -> None:
         """Initialize the number entity."""
         self.pyvlx = pyvlx
-        self.entry: ConfigEntry = entry
-
-    @property
-    def name(self) -> str:
-        """Name of the entity."""
-        return "Load all states on Heartbeat"
-
-    @property
-    def device_info(self) -> DeviceInfo:
-        """Return specific device attributes."""
-        return {
-            "identifiers": {(DOMAIN, self.entry.unique_id)},
-            "connections": {("Host", self.pyvlx.config.host)},
-            "name": f"{self.entry.unique_id}",
-            "manufacturer": "Velux",
-            "sw_version": self.pyvlx.klf200.version
-        }
-
-    @property
-    def entity_category(self) -> EntityCategory:
-        """Return the entity category of the switch."""
-        return EntityCategory.CONFIG
-
-    @property
-    def device_class(self) -> SwitchDeviceClass:
-        """Return device class of the switch."""
-        return SwitchDeviceClass.SWITCH
-
-    @property
-    def unique_id(self) -> str:
-        """Return unique ID of the switch."""
-        return f"{self.entry.unique_id}_heartbeat_load_all_states"
-
-    @property
-    def is_on(self) -> bool:
-        """Return true if the switch is on."""
-        return self.pyvlx.heartbeat.load_all_states
+        self._attr_unique_id = f"{entry.unique_id}_heartbeat_load_all_states"
+        self._attr_entity_category = EntityCategory.CONFIG
+        self._attr_device_class = SwitchDeviceClass.SWITCH
+        self._attr_name = "Load all states on Heartbeat"
+        self._attr_is_on = self.pyvlx.heartbeat.load_all_states
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, entry.unique_id)},
+        )
 
     def turn_on(self, **kwargs: Any) -> None:
         """Turn the switch on."""

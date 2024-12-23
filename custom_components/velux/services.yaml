@@ -1,7 +1,5 @@
 # Velux Integration services
 
-reboot_gateway:
-
 set_cover_position:
   target:
     entity:
