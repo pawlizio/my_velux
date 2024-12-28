@@ -88,19 +88,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     async def on_hass_stop(event):
         """Close connection when hass stops."""
         LOGGER.debug("Velux interface terminated")
-        await pyvlx.reboot_gateway()
         await pyvlx.disconnect()
 
     hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, on_hass_stop)
 
     return True
 
+
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unloading the Velux platform."""
     pyvlx: PyVLX = hass.data[DOMAIN][entry.entry_id]
-
-    # Avoid reconnection problems due to unresponsive KLF200
-    await pyvlx.reboot_gateway()
 
     # Disconnect from KLF200
     await pyvlx.disconnect()
