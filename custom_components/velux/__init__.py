@@ -14,37 +14,6 @@ from pyvlx import PyVLX
 
 from .const import DOMAIN, LOGGER, PLATFORMS
 
-CONFIG_SCHEMA = vol.Schema(
-    vol.All(
-        cv.deprecated(DOMAIN),
-        {
-            DOMAIN: vol.Schema(
-                {
-                    vol.Required(CONF_HOST): cv.string,
-                    vol.Required(CONF_PASSWORD): cv.string,
-                }
-            )
-        },
-    ),
-    extra=vol.ALLOW_EXTRA,
-)
-
-
-async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
-    """Set up the velux component."""
-    if DOMAIN not in config:
-        return True
-
-    hass.async_create_task(
-        hass.config_entries.flow.async_init(
-            DOMAIN,
-            context={"source": SOURCE_IMPORT},
-            data=config[DOMAIN],
-        )
-    )
-
-    return True
-
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up velux component from config entry."""
@@ -66,13 +35,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data[DOMAIN][entry.entry_id] = pyvlx
 
     # Add bridge device to device registry
-    device_registry = dr.async_get(hass)
+    connections = set()
+    mac_address = hass.data.get(dr.CONNECTION_NETWORK_MAC)
+    if mac_address is not None:
+        connections = {(dr.CONNECTION_NETWORK_MAC, mac_address)}
 
+    device_registry = dr.async_get(hass)
     device_registry.async_get_or_create(
         config_entry_id=entry.entry_id,
         identifiers={(DOMAIN, entry.unique_id)},
+        connections=connections,
         manufacturer="Velux",
-        name="io-homecontrol Interface",
+        name=entry.unique_id,
         model="KLF200",
         hw_version=pyvlx.klf200.version.hardwareversion,
         sw_version=pyvlx.klf200.version.softwareversion,

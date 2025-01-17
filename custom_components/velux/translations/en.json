@@ -10,6 +10,13 @@
             "invalid_host": "Invalid hostname or IP address"
         },
         "step": {
+            "discovery_confirm": {
+                "data": {
+                    "password": "Password"
+                },
+                "description": "Please enter the password for {name} ({host})",
+                "title": "Setup Velux"
+            },
             "user": {
                 "data": {
                     "host": "Host",
