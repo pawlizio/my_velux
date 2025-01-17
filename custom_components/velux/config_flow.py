@@ -51,7 +51,10 @@ class VeluxConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore
     VERSION = 1
     MINOR_VERSION = 2
 
-    hosts: list[VeluxHost] = []
+    def __init__(self) -> None:
+        """Initialize the config flow."""
+        self.discovery_data: dict[str, Any] = {}
+        self.hosts: list[VeluxHost] = []
 
     async def async_step_user(
         self, user_input: dict[str, str] | None = None
