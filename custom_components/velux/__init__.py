@@ -72,7 +72,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         config_entry_id=entry.entry_id,
         identifiers={(DOMAIN, entry.unique_id)},
         manufacturer="Velux",
-        name="io-homecontrol Interface",
+        name=entry.unique_id,
         model="KLF200",
         hw_version=pyvlx.klf200.version.hardwareversion,
         sw_version=pyvlx.klf200.version.softwareversion,
