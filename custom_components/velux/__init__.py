@@ -43,7 +43,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     device_registry = dr.async_get(hass)
     device_registry.async_get_or_create(
         config_entry_id=entry.entry_id,
-        identifiers={(DOMAIN, entry.unique_id)},
+        identifiers={(DOMAIN, str(entry.unique_id))},
         connections=connections,
         manufacturer="Velux",
         name=entry.unique_id,
