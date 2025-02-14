@@ -57,21 +57,21 @@ async def async_setup_entry(
     pyvlx: PyVLX = hass.data[DOMAIN][entry.entry_id]
     for node in pyvlx.nodes:
         if isinstance(node, DualRollerShutter):
-            entities.append(VeluxDualRollerShutter(node, subtype=DUAL_COVER))
+            entities.append(VeluxDualRollerShutter(node, entry, subtype=DUAL_COVER))
             LOGGER.debug("Cover added: %s_%s", node.name, DUAL_COVER)
-            entities.append(VeluxDualRollerShutter(node, subtype=UPPER_COVER))
+            entities.append(VeluxDualRollerShutter(node, entry, subtype=UPPER_COVER))
             LOGGER.debug("Cover added: %s_%s", node.name, UPPER_COVER)
-            entities.append(VeluxDualRollerShutter(node, subtype=LOWER_COVER))
+            entities.append(VeluxDualRollerShutter(node, entry, subtype=LOWER_COVER))
             LOGGER.debug("Cover added: %s_%s", node.name, LOWER_COVER)
         elif isinstance(node, Window):
             LOGGER.debug("Window will be added: %s", node.name)
-            entities.append(VeluxWindow(hass, node))
+            entities.append(VeluxWindow(hass, node, entry))
         elif isinstance(node, Blind):
             LOGGER.debug("Blind will be added: %s", node.name)
-            entities.append(VeluxBlind(node))
+            entities.append(VeluxBlind(node, entry))
         elif isinstance(node, (OpeningDevice, Blind)):
             LOGGER.debug("Cover will be added: %s", node.name)
-            entities.append(VeluxCover(node))
+            entities.append(VeluxCover(node, entry))
     async_add_entities(entities)
 
     platform: EntityPlatform = async_get_current_platform()
@@ -115,9 +115,9 @@ async def async_setup_entry(
 class VeluxCover(VeluxNodeEntity, CoverEntity):
     """Representation of a Velux cover."""
 
-    def __init__(self, node: OpeningDevice) -> None:
+    def __init__(self, node: OpeningDevice, entry: ConfigEntry) -> None:
         """Initialize VeluxCover."""
-        super().__init__(node)
+        super().__init__(node, entry)
         self.node: OpeningDevice = node
         if isinstance(node, Awning):
             self._attr_device_class = CoverDeviceClass.AWNING
@@ -205,9 +205,9 @@ class VeluxCover(VeluxNodeEntity, CoverEntity):
 class VeluxWindow(VeluxCover):
     """Representation of a Velux window."""
 
-    def __init__(self, hass: HomeAssistant, node: Window) -> None:
+    def __init__(self, hass: HomeAssistant, node: Window, entry: ConfigEntry) -> None:
         """Initialize Velux window."""
-        super().__init__(node)
+        super().__init__(node, entry)
         self._attr_device_class = CoverDeviceClass.WINDOW
         self._hass: HomeAssistant = hass
         self._extra_attr_limitation_min: int | None = None
@@ -268,10 +268,11 @@ class VeluxDualRollerShutter(VeluxCover):
     def __init__(
         self,
         node: DualRollerShutter,
+        entry: ConfigEntry,
         subtype: str,
     ) -> None:
         """Initialize Velux dual roller shutter."""
-        super().__init__(node)
+        super().__init__(node, entry)
         self.node: DualRollerShutter = node
         self.subtype = subtype
         self._attr_device_class = CoverDeviceClass.SHUTTER
@@ -345,9 +346,9 @@ class VeluxDualRollerShutter(VeluxCover):
 class VeluxBlind(VeluxCover):
     """Representation of a Velux blind."""
 
-    def __init__(self, node: Blind) -> None:
+    def __init__(self, node: Blind, entry: ConfigEntry) -> None:
         """Initialize Velux blind."""
-        super().__init__(node)
+        super().__init__(node, entry)
         self.node: Blind = node
         self._attr_device_class = CoverDeviceClass.BLIND
         self._is_blind = True

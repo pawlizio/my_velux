@@ -30,7 +30,7 @@ async def async_setup_entry(
     for node in pyvlx.nodes:
         if isinstance(node, OnOffSwitch):
             LOGGER.debug("Switch will be added: %s", node.name)
-            entities.append(VeluxSwitch(node))
+            entities.append(VeluxSwitch(node, entry))
         if isinstance(node, OpeningDevice) and not isinstance(node, DualRollerShutter):
             entities.append(VeluxDefaultVelocityUsedSwitch(node))
     async_add_entities(entities)
@@ -41,7 +41,7 @@ class VeluxSwitch(VeluxNodeEntity, SwitchEntity):
 
     def __init__(self, node: OnOffSwitch) -> None:
         """Initialize the switch."""
-        super().__init__(node)
+        super().__init__(node, entry)
         self._attr_device_class = SwitchDeviceClass.SWITCH
         self._attr_is_on = self.node.is_on()
 
@@ -108,7 +108,7 @@ class VeluxHouseStatusMonitor(SwitchEntity):
         self._attr_name = "House Status Monitor"
         self._attr_is_on = self.pyvlx.klf200.house_status_monitor_enabled
         self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.unique_id)},
+            identifiers={(DOMAIN, str(entry.unique_id))},
         )
 
     async def async_turn_on(self, **kwargs: Any) -> None:
@@ -132,7 +132,7 @@ class VeluxHeartbeat(SwitchEntity):
         self._attr_name = "Heartbeat"
         self._attr_is_on = not self.pyvlx.heartbeat.stopped
         self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.unique_id)},
+            identifiers={(DOMAIN, str(entry.unique_id))},
         )
 
     def turn_on(self, **kwargs: Any) -> None:
@@ -156,7 +156,7 @@ class VeluxHeartbeatLoadAllStates(SwitchEntity):
         self._attr_name = "Load all states on Heartbeat"
         self._attr_is_on = self.pyvlx.heartbeat.load_all_states
         self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.unique_id)},
+            identifiers={(DOMAIN, str(entry.unique_id))},
         )
 
     def turn_on(self, **kwargs: Any) -> None:

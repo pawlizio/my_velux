@@ -27,7 +27,7 @@ async def async_setup_entry(
     for node in pyvlx.nodes:
         if isinstance(node, LighteningDevice):
             _LOGGER.debug("Light will be added: %s", node.name)
-            entities.append(VeluxLight(node))
+            entities.append(VeluxLight(node, entry))
     async_add_entities(entities)
 
 

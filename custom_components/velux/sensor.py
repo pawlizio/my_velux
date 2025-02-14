@@ -32,7 +32,7 @@ class VeluxConnectionCounter(SensorEntity):
         self._attr_name = "Connection Counter"
         self._attr_native_value = self.pyvlx.connection.connection_counter
         self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.unique_id)},
+            identifiers={(DOMAIN, str(entry.unique_id))},
         )
 
 
@@ -47,7 +47,7 @@ class VeluxConnectionState(BinarySensorEntity):
         self._attr_name = "Connection State"
         self._attr_is_on = self.pyvlx.connection.connected
         self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.unique_id)},
+            identifiers={(DOMAIN, str(entry.unique_id))},
         )
 
     @callback

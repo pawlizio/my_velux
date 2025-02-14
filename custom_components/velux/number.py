@@ -52,7 +52,7 @@ class VeluxOpenOrientation(RestoreNumber):
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, str(self.node.node_id))},
             name=self.node.name,
-            via_device=(DOMAIN, entry.unique_id),
+            via_device=(DOMAIN, str(entry.unique_id)),
         )
 
     def set_native_value(self, value: float) -> None:
@@ -89,7 +89,7 @@ class VeluxCloseOrientation(RestoreNumber):
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, str(self.node.node_id))},
             name=self.node.name,
-            via_device=(DOMAIN, entry.unique_id),
+            via_device=(DOMAIN, str(entry.unique_id)),
         )
 
     def set_native_value(self, value: float) -> None:
@@ -126,7 +126,7 @@ class VeluxDefaultVelocity(RestoreNumber):
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, str(self.node.node_id))},
             name=self.node.name,
-            via_device=(DOMAIN, entry.unique_id),
+            via_device=(DOMAIN, str(entry.unique_id)),
         )
 
     def set_native_value(self, value: float) -> None:
@@ -161,7 +161,7 @@ class VeluxHeartbeatInterval(RestoreNumber):
         self._attr_unique_id = f"{entry.unique_id}_velux_heartbeat_interval"
         self._number_option_unit_of_measurement = PERCENTAGE
         self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.unique_id)},
+            identifiers={(DOMAIN, str(entry.unique_id))},
         )
 
     def set_native_value(self, value: float) -> None:

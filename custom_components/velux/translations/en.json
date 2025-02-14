@@ -14,16 +14,14 @@
                 "data": {
                     "password": "Password"
                 },
-                "description": "Please enter the password for {name} ({host})",
-                "title": "Setup Velux"
+                "description": "Please enter the password for {name} ({host})"
             },
             "user": {
                 "data": {
                     "host": "Host",
                     "password": "Password"
                 },
-                "description": "Please enter your password, you will find it on the backside of the KLF200",
-                "title": "Configure the KLF200 Gateway"
+                "description": "Please enter your password, you will find it on the backside of the KLF200"
             }
         }
     },

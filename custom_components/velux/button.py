@@ -33,7 +33,7 @@ class VeluxGatewayRestart(ButtonEntity):
         self._attr_device_class = ButtonDeviceClass.RESTART
         self._attr_name = f"Reboot {entry.unique_id}"
         self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.unique_id)},
+            identifiers={(DOMAIN, str(entry.unique_id))},
         )
 
     async def async_press(self) -> None:
