@@ -57,12 +57,9 @@ class VeluxOpenOrientation(RestoreNumber):
 
     async def async_set_native_value(self, value: float) -> None:
         """Update the current value."""
-        LOGGER.debug("Trying to set open_orientation_target of node: %s to %s", self.node, int(value))
         self.node.open_orientation_target = int(value)
         self._attr_native_value = self.node.open_orientation_target
         self.async_write_ha_state()
-        LOGGER.debug("Resulting open_orientation_target of node: %s to %s", self.node, self.node.open_orientation_target)
-        LOGGER.debug("Attribute value is: %s", self._attr_native_value)
         
     async def async_internal_added_to_hass(self) -> None:
         """Restore number from last number data."""
@@ -71,10 +68,8 @@ class VeluxOpenOrientation(RestoreNumber):
         value: NumberExtraStoredData | None = await self.async_get_last_number_data()
         if value is not None and value.native_value is not None:
             try:
-                LOGGER.debug("Restored open_orientation_target for node: %s with value %s", self.node, value.native_value)
                 await self.async_set_native_value(value.native_value)
             except (TypeError, ValueError):
-                LOGGER.debug("Could not restore open_orientation_target for node: %s", self.node)
                 await self.async_set_native_value(self.node.open_orientation_target)
 
 
