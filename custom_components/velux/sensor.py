@@ -30,10 +30,14 @@ class VeluxConnectionCounter(SensorEntity):
         self.pyvlx: PyVLX = pyvlx
         self._attr_unique_id = f"{entry.unique_id}_connection_counter"
         self._attr_name = "Connection Counter"
-        self._attr_native_value = self.pyvlx.connection.connection_counter
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, str(entry.unique_id))},
         )
+
+    @property
+    def native_value(self) -> int:
+        """Return true if connected."""
+        return self.pyvlx.connection.connection_counter
 
 
 class VeluxConnectionState(BinarySensorEntity):
@@ -45,10 +49,14 @@ class VeluxConnectionState(BinarySensorEntity):
         self._attr_unique_id = f"{entry.unique_id}_connection_state"
         self._attr_device_class = BinarySensorDeviceClass.CONNECTIVITY
         self._attr_name = "Connection State"
-        self._attr_is_on = self.pyvlx.connection.connected
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, str(entry.unique_id))},
         )
+
+    @property
+    def is_on(self) -> bool:
+        """Return true if connected."""
+        return self.pyvlx.connection.connected
 
     @callback
     async def after_update_callback(self):

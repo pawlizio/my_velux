@@ -38,7 +38,7 @@ class VeluxScene(Scene):
     @property
     def unique_id(self) -> str:
         """Return the unique ID of this cover."""
-        return self.scene.scene_id
+        return str(self.scene.scene_id)
 
     async def async_activate(self, **kwargs: Any) -> None:
         """Activate the scene."""

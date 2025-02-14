@@ -39,17 +39,22 @@ async def async_setup_entry(
 class VeluxSwitch(VeluxNodeEntity, SwitchEntity):
     """Representation of a Velux physical switch."""
 
-    def __init__(self, node: OnOffSwitch) -> None:
+    _attr_device_class = SwitchDeviceClass.SWITCH
+
+    def __init__(self, node: OnOffSwitch, entry: ConfigEntry) -> None:
         """Initialize the switch."""
         super().__init__(node, entry)
-        self._attr_device_class = SwitchDeviceClass.SWITCH
-        self._attr_is_on = self.node.is_on()
 
-    async def async_turn_on(self, **kwargs: Any) -> None:
+    @property
+    def is_on(self) -> bool:
+        """Return true if on."""
+        return self.node.is_on()
+
+    async def async_turn_on(self) -> None:
         """Turn the switch on."""
         await self.node.set_on()
 
-    async def async_turn_off(self, **kwargs: Any) -> None:
+    async def async_turn_off(self) -> None:
         """Turn the switch off."""
         await self.node.set_off()
 
@@ -65,7 +70,9 @@ class VeluxDefaultVelocityUsedSwitch(SwitchEntity, RestoreEntity):
         self._attr_entity_category = EntityCategory.CONFIG
         self._attr_device_class = SwitchDeviceClass.SWITCH
         self._attr_name = self.node.name + " Use Default Velocity"
-        self._attr_is_on = self.node.use_default_velocity
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, str(self.node.node_id))},
+        )
 
     async def async_added_to_hass(self) -> None:
         """Restore state from last state."""
@@ -80,12 +87,9 @@ class VeluxDefaultVelocityUsedSwitch(SwitchEntity, RestoreEntity):
             self.turn_off()
 
     @property
-    def device_info(self) -> DeviceInfo:
-        """Return specific device attributes."""
-        return {
-            "identifiers": {(DOMAIN, str(self.node.node_id))},
-            "name": self.node.name,
-        }
+    def is_on(self) -> bool:
+        """Return true if on."""
+        return self.node.use_default_velocity
 
     def turn_on(self, **kwargs: Any) -> None:
         """Turn the entity on."""
@@ -106,10 +110,14 @@ class VeluxHouseStatusMonitor(SwitchEntity):
         self._attr_entity_category = EntityCategory.CONFIG
         self._attr_device_class = SwitchDeviceClass.SWITCH
         self._attr_name = "House Status Monitor"
-        self._attr_is_on = self.pyvlx.klf200.house_status_monitor_enabled
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, str(entry.unique_id))},
         )
+
+    @property
+    def is_on(self) -> bool:
+        """Return true if on."""
+        return self.pyvlx.klf200.house_status_monitor_enabled
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the switch on."""
@@ -130,10 +138,14 @@ class VeluxHeartbeat(SwitchEntity):
         self._attr_entity_category = EntityCategory.CONFIG
         self._attr_device_class = SwitchDeviceClass.SWITCH
         self._attr_name = "Heartbeat"
-        self._attr_is_on = not self.pyvlx.heartbeat.stopped
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, str(entry.unique_id))},
         )
+
+    @property
+    def is_on(self) -> bool:
+        """Return true if on."""
+        return not self.pyvlx.heartbeat.stopped
 
     def turn_on(self, **kwargs: Any) -> None:
         """Turn the switch on."""
@@ -154,10 +166,14 @@ class VeluxHeartbeatLoadAllStates(SwitchEntity):
         self._attr_entity_category = EntityCategory.CONFIG
         self._attr_device_class = SwitchDeviceClass.SWITCH
         self._attr_name = "Load all states on Heartbeat"
-        self._attr_is_on = self.pyvlx.heartbeat.load_all_states
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, str(entry.unique_id))},
         )
+
+    @property
+    def is_on(self) -> bool:
+        """Return true if on."""
+        return self.pyvlx.heartbeat.load_all_states
 
     def turn_on(self, **kwargs: Any) -> None:
         """Turn the switch on."""
