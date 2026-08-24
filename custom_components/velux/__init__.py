@@ -11,6 +11,7 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.helpers.typing import ConfigType
 from pyvlx import PyVLX
+from pyvlx.exception import PyVLXException
 
 from .const import DOMAIN, LOGGER, PLATFORMS
 
@@ -26,7 +27,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     pyvlx: PyVLX = PyVLX(**pyvlx_args)
     try:
         await pyvlx.connect()
-    except OSError as ex:
+    except (OSError, PyVLXException) as ex:
         LOGGER.warning("Unable to connect to KLF200: %s", str(ex))
         raise ConfigEntryNotReady from ex
 
@@ -40,21 +41,30 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if mac_address is not None:
         connections = {(dr.CONNECTION_NETWORK_MAC, mac_address)}
 
-    device_registry = dr.async_get(hass)
-    device_registry.async_get_or_create(
-        config_entry_id=entry.entry_id,
-        identifiers={(DOMAIN, str(entry.unique_id))},
-        connections=connections,
-        manufacturer="Velux",
-        name=entry.unique_id,
-        model="KLF200",
-        hw_version=pyvlx.klf200.version.hardwareversion,
-        sw_version=pyvlx.klf200.version.softwareversion,
-    )
+    try:
+        device_registry = dr.async_get(hass)
+        device_registry.async_get_or_create(
+            config_entry_id=entry.entry_id,
+            identifiers={(DOMAIN, str(entry.unique_id))},
+            connections=connections,
+            manufacturer="Velux",
+            name=entry.unique_id,
+            model="KLF200",
+            hw_version=pyvlx.klf200.version.hardwareversion,
+            sw_version=pyvlx.klf200.version.softwareversion,
+        )
 
-    # Load nodes (devices) and scenes from API
-    await pyvlx.load_nodes()
-    await pyvlx.load_scenes()
+        # Load nodes (devices) and scenes from API
+        await pyvlx.load_nodes()
+        await pyvlx.load_scenes()
+    except (OSError, PyVLXException) as ex:
+        # The KLF200 only accepts one session at a time. Release it before
+        # asking Home Assistant to retry, otherwise every later attempt would
+        # time out against our own stale connection.
+        LOGGER.warning("Unable to load data from KLF200: %s", str(ex))
+        await pyvlx.disconnect()
+        hass.data[DOMAIN].pop(entry.entry_id, None)
+        raise ConfigEntryNotReady from ex
 
     # Setup velux components
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
